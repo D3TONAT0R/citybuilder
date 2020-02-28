@@ -38,8 +38,10 @@ public class Commands {
 		} else if (c.equalsIgnoreCase("createstructure")) {
 			if(args.length > 0) {
 				boolean infoline = true;
-				if(args.length > 1 && args[1].equalsIgnoreCase("-ignoreinfoline")) infoline = false;;
-				StructureFactory.onBeginCreateNewStructure(p, args[0], infoline);
+				String category = "";
+				if(args.length > 1) category = args[1];
+				if(args.length > 2 && args[2].equalsIgnoreCase("-ignoreinfoline")) infoline = false;;
+				StructureFactory.onBeginCreateNewStructure(p, args[0], category, infoline);
 				return true;
 			}
 		} else if (c.equalsIgnoreCase("buildstructure")) {
@@ -47,7 +49,9 @@ public class Commands {
 				City city = CBMain.currentlyEditingCity.get(p);
 				if(city == null) city = CBMain.findClosestCity(p);
 				if(city != null) {
-					boolean result = city.buildStructureAtChunk(args[0], new ChunkPosition(p.getLocation()), true);
+					Orientation orientation = Orientation.SOUTH;
+					if(args.length > 1) orientation = Orientation.fromString(args[1]);
+					boolean result = city.buildStructureAtChunk(args[0], new ChunkPosition(p.getLocation()), orientation, true);
 					if(!result) p.sendMessage("Failed to build structure! See log for details.");
 				} else {
 					p.sendMessage("There is no city around to place the building!");

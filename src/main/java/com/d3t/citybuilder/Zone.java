@@ -34,7 +34,7 @@ public class Zone {
 	public void reZone(ZoneType zt, ZoneDensity zd) {
 		zoneType = zt;
 		density = zd;
-		build(null, false);
+		build(null, Orientation.SOUTH, false);
 	}
 	
 	public ZoneDensity getDensity() {
@@ -62,16 +62,17 @@ public class Zone {
 			}
 		}
 		Arrays.sort(heights);
-		averageTerrainLevel = heights[128];
+		//averageTerrainLevel = heights[128];
+		averageTerrainLevel = 64;
 		return heights;
 	}
 	
-	public void build(Structure s, boolean force) {
+	public void build(Structure s, Orientation orientation, boolean force) {
 		//if(!force && isBuilt()) return;
 		if(s == null) {
 			makeOutline();
 		} else {
-			s.build(this, Orientation.NORTH);
+			s.build(this, orientation);
 		}
 	}
 	

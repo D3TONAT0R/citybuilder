@@ -9,7 +9,10 @@ import java.io.InputStreamReader;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.MultipleFacing;
 
 public class Structure {
 
@@ -19,6 +22,8 @@ public class Structure {
 	public boolean drawDebugVolume;
 	
 	public String structureName;
+	public String category;
+	public String creator;
 	public BlockData[][][] blocks = new BlockData[16][32][16];
 	public int sizeX = 1;
 	public int sizeZ = 1;
@@ -29,9 +34,11 @@ public class Structure {
 		
 	}
 	
-	public Structure(BlockData[][][] blocks, String name, int chunksX, int chunksZ, int lawfulHeight, RealEstateData[] realEstate) {
+	public Structure(BlockData[][][] blocks, String name, String cat, String creatorName, int chunksX, int chunksZ, int lawfulHeight, RealEstateData[] realEstate) {
 		this();
 		structureName = name;
+		category = cat;
+		creator = creatorName;
 		this.blocks = blocks;
 		this.sizeX = chunksX;
 		this.sizeZ = chunksZ;
@@ -47,16 +54,70 @@ public class Structure {
 		if(drawDebugVolume) {
 			createDebugStructure(zone);
 		} else {
-			int underground = StructureFactory.undergroundLayers;
-			ChunkPosition chunk = zone.pos;
 			for(int y = 0; y < getTotalHeight(); y++) {
 				for(int z = 0; z < sizeZ*16; z++) {
 					for(int x = 0; x < sizeX*16; x++) {
-						zone.world.getBlockAt(chunk.getBlockX()+x, zone.averageTerrainLevel-underground+y, chunk.getBlockZ()+z).setBlockData(blocks[x][y][z]);
+						setBlockAt(zone,x,y,z,getBlockForOrientation(x,y,z,facing));
 					}
 				}
 			}
 		}
+	}
+	
+	private BlockData getBlockForOrientation(int x, int y, int z, Orientation orientation) {
+		switch(orientation) {
+		case SOUTH:
+		case SOUTH_WEST:
+			return applyRotation(blocks[x][y][z],0);
+		case WEST:
+		case NORTH_WEST:
+			return applyRotation(blocks[z][y][15-x],1);
+		case NORTH:
+		case NORTH_EAST:
+			return applyRotation(blocks[15-x][y][15-z],2);
+		case EAST:
+		case SOUTH_EAST:
+			return applyRotation(blocks[15-z][y][x],3);
+		default:
+			return blocks[x][y][z];
+		}
+	}
+	
+	private void setBlockAt(Zone zone, int x, int y, int z, BlockData data) {
+		int underground = StructureFactory.undergroundLayers;
+		ChunkPosition chunk = zone.pos;
+		zone.world.getBlockAt(chunk.getBlockX()+x, zone.averageTerrainLevel-underground+y, chunk.getBlockZ()+z).setType(Material.AIR);
+		zone.world.getBlockAt(chunk.getBlockX()+x, zone.averageTerrainLevel-underground+y, chunk.getBlockZ()+z).setBlockData(data);
+
+	}
+	
+	//TODO: Rotate angled signs & banners
+	private BlockData applyRotation(BlockData data, int steps) {
+		data = data.clone();
+		final BlockFace[] blockFaces = new BlockFace[] { BlockFace.SOUTH, BlockFace.WEST, BlockFace.NORTH, BlockFace.EAST };
+		if(data instanceof Directional) {
+			Directional d = (Directional)data;
+			BlockFace face = d.getFacing();
+			int r = 0;
+			if(face == BlockFace.SOUTH) r = 0;
+			else if(face == BlockFace.WEST) r = 1;
+			else if(face == BlockFace.NORTH) r = 2;
+			else if(face == BlockFace.EAST) r = 3;
+			d.setFacing(blockFaces[(r+steps) % 4]);
+			return d;
+		} else if(data instanceof MultipleFacing) {
+			MultipleFacing mf = (MultipleFacing)data;
+			boolean[] facings = new boolean[4];
+			facings[0] = mf.hasFace(BlockFace.SOUTH);
+			facings[1] = mf.hasFace(BlockFace.WEST);
+			facings[2] = mf.hasFace(BlockFace.NORTH);
+			facings[3] = mf.hasFace(BlockFace.EAST);
+			mf.setFace(BlockFace.SOUTH, facings[(0+steps)%4]);
+			mf.setFace(BlockFace.WEST, facings[(1+steps)%4]);
+			mf.setFace(BlockFace.NORTH, facings[(2+steps)%4]);
+			mf.setFace(BlockFace.EAST, facings[(3+steps)%4]);
+		}
+		return data;
 	}
 	
 	public static void createDebugStructure(Zone zone) {
@@ -98,32 +159,39 @@ public class Structure {
 	}
 	
 	public boolean writeToFile() {
-		File file = new File(CBMain.getDataFolderPath(), structureName.toLowerCase()+fileExtension);
+		String subfolder = "";
+		if(category != null && category.length() > 1) subfolder = category+"/";
+		File file = new File(CBMain.getDataFolderPath(), subfolder+structureName.toLowerCase()+fileExtension);
 	    if (!file.exists()) {
-	    	CBMain.getDataFolderPath().mkdirs();
+	    	file.getParentFile().mkdirs();
+	    	//CBMain.getDataFolderPath().mkdirs();
 	    }
 	    int x = 0;
 	    int y = 0;
 	    int z = 0;
 	    try {
 	    	byte[] version = (fileVersion+"\n").getBytes();
+	    	byte[] cat = (category+"\n").getBytes();
 	    	byte[] name = (structureName+"\n").getBytes();
+	    	byte[] creatorName = (creator+"\n").getBytes();
 	    	byte[] size = String.format("%sx%s\n", sizeX, sizeZ).getBytes();
 	    	byte[] height = (getTotalHeight()+";"+lawfulHeight+"\n").getBytes();
 	    	FileOutputStream stream = new FileOutputStream(file);
 	    	stream.write(version);
+	    	stream.write(cat);
 	    	stream.write(name);
+	    	stream.write(creatorName);
 	    	stream.write(size);
 	    	stream.write(height);
 	    	for(y = 0; y < blocks[0].length; y++) {
 		    	for(z = 0; z < blocks[0][0].length; z++) {
 			    	for(x = 0; x < blocks.length; x++) {
 			    		stream.write(blocks[x][y][z].getAsString().getBytes());
-			    		stream.write(" ".getBytes());
+			    		if(x < blocks.length-1) stream.write(" ".getBytes());
 			    	}
 			    	stream.write("\n".getBytes());
 		    	}
-		    	stream.write("#".getBytes());
+		    	//stream.write("#\n".getBytes());
 	    	}
 	    	stream.close();
 	    	System.out.println("Structure file created: "+file.getAbsolutePath());
@@ -162,7 +230,9 @@ public class Structure {
 	
 	private static Structure readFileVersion1(BufferedReader reader, File file) {
 		try {
+			String cat = reader.readLine();
 			String name = reader.readLine();
+			String creatorName = reader.readLine();
 			String[] sizeStr = reader.readLine().split("x");
 			int[] sizes = new int[2];
 			for(int i = 0; i < 2; i++) sizes[i] = Integer.parseInt(sizeStr[i]);
@@ -178,7 +248,7 @@ public class Structure {
 					blocks[x][y][z] = CBMain.INSTANCE.getServer().createBlockData(ln[x]);
 				}
 			}
-			return new Structure(blocks, name, sizes[0], sizes[1], heights[1], new RealEstateData[0]);
+			return new Structure(blocks, name, cat, creatorName, sizes[0], sizes[1], heights[1], new RealEstateData[0]);
 		}
 		catch(Exception e) {
 			System.out.println("Error while creating structure from file:"+file.getAbsolutePath());

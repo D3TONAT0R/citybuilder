@@ -19,8 +19,9 @@ public class StructureFactory {
 	public Material[] infoline = new Material[16];
 	private Structure structure;
 
-	public StructureFactory(World w, ChunkPosition pos, String n, boolean requireInfoline, Player creator) {
+	public StructureFactory(World w, ChunkPosition pos, String n, String category, boolean requireInfoline, Player creator) {
 		world = w;
+		if(category.length() < 2) category = "";
 		chunk = pos;
 		name = n;
 		if (requireInfoline) {
@@ -34,12 +35,12 @@ public class StructureFactory {
 		int totalHeight = getStructureHeightPeak();
 		int lawfulHeight = getLawfulStructureHeight(totalHeight);
 		BlockData[][][] blocks = fetchBlocksFromChunk();
-		structure = new Structure(blocks, name, 1, 1, lawfulHeight, new RealEstateData[0]);
+		structure = new Structure(blocks, name, category, creator.getName(), 1, 1, lawfulHeight, new RealEstateData[0]);
 	}
 
-	public static void onBeginCreateNewStructure(Player p, String name, boolean requireInfoline) {
+	public static void onBeginCreateNewStructure(Player p, String name, String category, boolean requireInfoline) {
 		ChunkPosition pos = new ChunkPosition(p.getLocation());
-		StructureFactory sf = new StructureFactory(p.getWorld(), pos, name, requireInfoline, p);
+		StructureFactory sf = new StructureFactory(p.getWorld(), pos, name, category, requireInfoline, p);
 
 		// Done
 		StructureLibrary.registerStructure(sf.structure);

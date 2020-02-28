@@ -64,12 +64,12 @@ public class City {
 		}
 	}
 	
-	public boolean buildStructureAtChunk(String structureName, ChunkPosition pos, boolean forceBuild) {
+	public boolean buildStructureAtChunk(String structureName, ChunkPosition pos, Orientation orientation, boolean forceBuild) {
 		int index = pos.getIndex();
 		if(chunks.containsKey(index)) {
 			Structure s = StructureLibrary.allStructures.get(structureName);
 			if(s != null) {
-				chunks.get(index).build(s, forceBuild);
+				chunks.get(index).build(s, orientation, forceBuild);
 				return true;
 			} else {
 				System.out.println("Can't build '"+structureName+"' here, the structure does not exist");
