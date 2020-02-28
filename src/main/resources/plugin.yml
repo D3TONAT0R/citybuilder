@@ -1,0 +1,37 @@
+name: CityBuilder
+main: com.d3t.citybuilder.CBMain
+version: 0.0.1
+api-version: 1.15
+softdepend: [Vault, ActionBarAPI]
+
+permissions:
+   citybuilder.templateperm:
+      description: Template permission
+      default: false 
+
+commands:
+   foundcity:
+      description: ...
+      usage: /<templatecommand> [...]
+      permission: citybuilder.templatecommand
+      permission-message: You don't have permission to use this command
+   updatecity:
+      description: ...
+      usage: /<templatecommand> [...]
+      permission: citybuilder.templatecommand
+      permission-message: You don't have permission to use this command
+   opencityeditor:
+      description: ...
+      usage: /<templatecommand> [...]
+      permission: citybuilder.templatecommand
+      permission-message: You don't have permission to use this command
+   createstructure:
+      description: ...
+      usage: /<templatecommand> [...]
+      permission: citybuilder.templatecommand
+      permission-message: You don't have permission to use this command
+   buildstructure:
+      description: ...
+      usage: /<templatecommand> [...]
+      permission: citybuilder.templatecommand
+      permission-message: You don't have permission to use this command

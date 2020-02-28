@@ -1,0 +1,82 @@
+package com.d3t.citybuilder;
+
+import java.util.HashMap;
+
+import org.bukkit.World;
+import org.bukkit.entity.Player;
+
+public class City {
+
+	public World world;
+	public String mayorName;
+	public HashMap<Integer, Zone> chunks;
+	public ChunkPosition origin;
+	
+	public String cityName;
+	
+	public City(World w, int x, int z, String owner, String name) {
+		world = w;
+		origin = new ChunkPosition(x, z);
+		chunks = new HashMap<Integer, Zone>();
+		mayorName = owner;
+		cityName = name;
+		addArea(x-2,z-2,x+2,z+2);
+	}
+	
+	public void addArea(int x1, int z1, int x2, int z2) {
+		int existingZones = 0;
+		int newZones = 0;
+		for(int i = x1; i <= x2; i++) {
+			for(int j = z1; j <= z2; j++) {
+				if(addChunk(i, j)) {
+					newZones++;
+				} else {
+					existingZones++;
+				}
+			}
+		}
+		CBMain.log.info(String.format("Added %s zones to City '%s'. (already zoned chunks: %s)", newZones, cityName, existingZones));
+	}
+	
+	public boolean addChunk(int x, int z) {
+		if(chunks.containsKey(CityAreaHandler.chunkPosToIndex(x, z))) {
+			return false;
+		} else {
+			Zone zone = new Zone(world, x, z);
+			chunks.put(zone.pos.getIndex(), zone);
+			return true;
+		}
+	}
+	
+	public void update() {
+		
+	}
+	
+	public boolean setZone(Player sender, int chunkX, int chunkZ, ZoneType zone, ZoneDensity density) {
+		int index = new ChunkPosition(chunkX, chunkZ).getIndex();
+		if(chunks.containsKey(index)) {
+			chunks.get(index).reZone(zone, density);
+			sender.sendMessage("Zone set to '"+zone.toString()+"'");
+			return true;
+		} else {
+			sender.sendMessage("Out of city bounds!");
+			return false;
+		}
+	}
+	
+	public boolean buildStructureAtChunk(String structureName, ChunkPosition pos, boolean forceBuild) {
+		int index = pos.getIndex();
+		if(chunks.containsKey(index)) {
+			Structure s = StructureLibrary.allStructures.get(structureName);
+			if(s != null) {
+				chunks.get(index).build(s, forceBuild);
+				return true;
+			} else {
+				System.out.println("Can't build '"+structureName+"' here, the structure does not exist");
+			}
+		} else {
+			System.out.println("Can't build here, out of bounds!");
+		}
+		return false;
+	}
+}
