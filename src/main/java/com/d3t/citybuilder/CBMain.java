@@ -42,8 +42,14 @@ public final class CBMain extends JavaPlugin {
 		commandHandler = new Commands(getServer());
 		getServer().getScheduler().runTaskTimer(this, new PluginLoop(), 20, 1);
 		getServer().getPluginManager().registerEvents(new ClickEventHandler(), this);
-		StructureLibrary.loadSavedStructures(getDataFolderPath());
+		SaveHandler.loadCities();
+		StructureLibrary.loadSavedStructures();
 	}
+	
+	 @Override
+	 public void onDisable() {
+		 SaveHandler.saveCities();
+	 }
 
 	private boolean setupEconomy() {
 		if (getServer().getPluginManager().getPlugin("Vault") == null) {
@@ -55,10 +61,6 @@ public final class CBMain extends JavaPlugin {
 		}
 		econ = rsp.getProvider();
 		return econ != null;
-	}
-
-	@Override
-	public void onDisable() {
 	}
 
 	@Override

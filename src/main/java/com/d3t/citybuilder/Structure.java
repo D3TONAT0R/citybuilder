@@ -4,12 +4,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.MalformedInputException;
+import java.util.ArrayList;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.TileState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.MultipleFacing;
@@ -19,12 +21,17 @@ public class Structure {
 	public static final int fileVersion = 1;
 	public static final String fileExtension = ".cbstructure";
 	
+	public static final String realEstateDataSaveMark = "#REALESTATEDATA";
+	public static final String blockDataSaveMark = "#BLOCKS";
+	public static final String tileDataSaveMark = "#TILEDATA";
+
 	public boolean drawDebugVolume;
 	
 	public String structureName;
 	public String category;
 	public String creator;
 	public BlockData[][][] blocks = new BlockData[16][32][16];
+	public TileState[][][] blockTiles = new TileState[16][32][16];
 	public int sizeX = 1;
 	public int sizeZ = 1;
 	public int lawfulHeight = 0;
@@ -34,16 +41,25 @@ public class Structure {
 		
 	}
 	
-	public Structure(BlockData[][][] blocks, String name, String cat, String creatorName, int chunksX, int chunksZ, int lawfulHeight, RealEstateData[] realEstate) {
+	public Structure(BlockData[][][] blocks, TileState[][][] tileStates, String name, String cat, String creatorName, int chunksX, int chunksZ, int lawfulHeight, RealEstateData[] realEstate) {
 		this();
 		structureName = name;
 		category = cat;
 		creator = creatorName;
 		this.blocks = blocks;
+		this.blockTiles = tileStates;
 		this.sizeX = chunksX;
 		this.sizeZ = chunksZ;
 		this.lawfulHeight = lawfulHeight;
 		this.realEstateData = realEstate;
+	}
+	
+	public void setTileStates(TileState[][][] states) {
+		blockTiles = states;
+	}
+	
+	public void setTileState(int x, int y, int z, TileState state) {
+		blockTiles[x][y][z] = state;
 	}
 	
 	public int getTotalHeight() {
@@ -159,8 +175,8 @@ public class Structure {
 	}
 	
 	public boolean writeToFile() {
-		String subfolder = "";
-		if(category != null && category.length() > 1) subfolder = category+"/";
+		String subfolder = "structures/";
+		if(category != null && category.length() > 1) subfolder += category+"/";
 		File file = new File(CBMain.getDataFolderPath(), subfolder+structureName.toLowerCase()+fileExtension);
 	    if (!file.exists()) {
 	    	file.getParentFile().mkdirs();
@@ -183,6 +199,11 @@ public class Structure {
 	    	stream.write(creatorName);
 	    	stream.write(size);
 	    	stream.write(height);
+	    	stream.write((realEstateDataSaveMark+"\n").getBytes());
+	    	for(RealEstateData re : realEstateData) {
+	    		stream.write((re.getSaveString()+"\n").getBytes());
+	    	}
+	    	stream.write((blockDataSaveMark+"\n").getBytes());
 	    	for(y = 0; y < blocks[0].length; y++) {
 		    	for(z = 0; z < blocks[0][0].length; z++) {
 			    	for(x = 0; x < blocks.length; x++) {
@@ -191,8 +212,9 @@ public class Structure {
 			    	}
 			    	stream.write("\n".getBytes());
 		    	}
-		    	//stream.write("#\n".getBytes());
 	    	}
+	    	stream.write((tileDataSaveMark+"\n").getBytes());
+	    	//TODO: write tileData
 	    	stream.close();
 	    	System.out.println("Structure file created: "+file.getAbsolutePath());
 	    	return true;
@@ -218,6 +240,7 @@ public class Structure {
 				return readFileVersion1(reader, file);
 			} else {
 				System.out.println("Unknown file version: "+version);
+				reader.close();
 				return null;
 			}
 		}
@@ -234,26 +257,113 @@ public class Structure {
 			String name = reader.readLine();
 			String creatorName = reader.readLine();
 			String[] sizeStr = reader.readLine().split("x");
-			int[] sizes = new int[2];
-			for(int i = 0; i < 2; i++) sizes[i] = Integer.parseInt(sizeStr[i]);
+			int sizeX = 1;
+			int sizeZ = 1;
+			sizeX = Integer.parseInt(sizeStr[0]);
+			sizeZ = Integer.parseInt(sizeStr[1]);
 			String[] heightsStr = reader.readLine().split(";");
 			int[] heights = new int[2];
 			for(int i = 0; i < 2; i++) heights[i] = Integer.parseInt(heightsStr[i]);
-			BlockData[][][] blocks = new BlockData[sizes[0]*16][heights[0]][sizes[1]*16];
-			for(int i = 0; i < sizes[1]*heights[0]; i++) {
-				int z = Math.floorMod(i, sizes[1]);
-				int y = Math.floorDiv(i, sizes[1]);
-				String[] ln = reader.readLine().split(" ");
-				for(int x = 0; x < sizes.length*16; x++) {
-					blocks[x][y][z] = CBMain.INSTANCE.getServer().createBlockData(ln[x]);
-				}
-			}
-			return new Structure(blocks, name, cat, creatorName, sizes[0], sizes[1], heights[1], new RealEstateData[0]);
+			if(!reader.readLine().equals(realEstateDataSaveMark)) throw new MalformedInputException(0);
+			RealEstateData[] realestate = readRealEstateData(reader);
+			if(!reader.readLine().equals(blockDataSaveMark)) throw new MalformedInputException(0);
+			BlockData[][][] blocks = readBlockData(reader, sizeX*16, heights[0], sizeZ*16);
+			if(!reader.readLine().equals(tileDataSaveMark)) throw new MalformedInputException(0);
+			TileState[][][] tileStates = readTileStateData(reader, sizeX*16, heights[0], sizeZ*16);
+			reader.close();
+			Structure s = new Structure(blocks, tileStates, name, cat, creatorName, sizeX, sizeZ, heights[1], realestate);
+			s.verifyIntegrity();
+			return s;
 		}
 		catch(Exception e) {
 			System.out.println("Error while creating structure from file:"+file.getAbsolutePath());
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	private static BlockData[][][] readBlockData(BufferedReader reader, int sizeX, int sizeY, int sizeZ) throws IOException {
+		BlockData[][][] blocks = new BlockData[sizeX][sizeY][sizeZ];
+		int x = 0, y = 0, z = 0;
+		boolean done = false;
+		while(!done) {
+			reader.mark(10000);
+			String lnr = reader.readLine();
+			if(lnr == null || lnr.startsWith("#")) {
+				if(lnr != null && lnr.startsWith("#")) reader.reset();
+				done = true;
+				break;
+			}
+			String[] ln = lnr.split(" ");
+			for(x = 0; x < sizeX; x++) {
+				BlockData bd = CBMain.INSTANCE.getServer().createBlockData(ln[x]);;
+				blocks[x][y][z] = bd;
+			}
+			z++;
+			if(z >= sizeZ) {
+				y++;
+				if(y >= sizeY) done = true;
+				z = 0;
+			}
+		}
+		return blocks;
+	}
+	
+	private static TileState[][][] readTileStateData(BufferedReader reader, int sizeX, int sizeY, int sizeZ) throws IOException {
+		TileState[][][] states = new TileState[sizeX][sizeY][sizeZ];
+		boolean done = false;
+		while(!done) {
+			reader.mark(10000);
+			String lnr = reader.readLine();
+			if(lnr == null || lnr.startsWith("#")) {
+				if(lnr != null && lnr.startsWith("#")) reader.reset();
+				done = true;
+				break;
+			}
+			if(lnr.length() > 1) {
+				String[] split = lnr.split(" ");
+				int x = Integer.parseInt(split[0]);
+				int y = Integer.parseInt(split[1]);
+				int z = Integer.parseInt(split[2]);
+				String rest = lnr.substring(split[0].length()+split[1].length()+split[2].length()+3, lnr.length()-1);
+				//TODO: create tilestates
+			}
+		}
+		return states;
+	}
+	
+	private static RealEstateData[] readRealEstateData(BufferedReader reader) throws IOException {
+		ArrayList<RealEstateData> data = new ArrayList<RealEstateData>();
+		boolean done = false;
+		while(!done) {
+			reader.mark(10000);
+			String s = reader.readLine();
+			if(s == null || s.startsWith("#")) {
+				if(s != null && s.startsWith("#")) reader.reset();
+				done = true;
+				break;
+			}
+			//TODO: read real estate data
+		}
+		RealEstateData[] arr = new RealEstateData[0];
+		data.toArray(arr);
+		return arr;
+	}
+	
+	public boolean verifyIntegrity() {
+		int nullBlocks = 0;
+		int blockArraySize = blocks.length*blocks[0].length*blocks[0][0].length;
+		for(int y = 0; y < blocks[0].length; y++) {
+			for(int z = 0; z < blocks[0][0].length; z++) {
+				for(int x = 0; x < blocks.length; x++) {
+					if(blocks[x][y][z] == null) {
+						System.out.println(String.format("NULL @ %s %s %s - %s", x,y,z, blocks[x][y][z]));
+						nullBlocks++;
+					}
+				}
+			}
+		}
+		if(nullBlocks > 0) System.out.println(String.format("integrity check for structure '%s' has detected null entries in the block array. %s out of %s values are NULL.", structureName, nullBlocks, blockArraySize));
+		return nullBlocks == 0;
 	}
 }

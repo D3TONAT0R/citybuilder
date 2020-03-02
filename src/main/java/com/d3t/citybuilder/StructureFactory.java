@@ -2,6 +2,7 @@ package com.d3t.citybuilder;
 
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.TileState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 
@@ -17,7 +18,10 @@ public class StructureFactory {
 	public ChunkPosition chunk;
 	public String name;
 	public Material[] infoline = new Material[16];
+	private BlockData[][][] blocks;
+	private TileState[][][] tileStates;
 	private Structure structure;
+	
 
 	public StructureFactory(World w, ChunkPosition pos, String n, String category, boolean requireInfoline, Player creator) {
 		world = w;
@@ -34,8 +38,8 @@ public class StructureFactory {
 		}
 		int totalHeight = getStructureHeightPeak();
 		int lawfulHeight = getLawfulStructureHeight(totalHeight);
-		BlockData[][][] blocks = fetchBlocksFromChunk();
-		structure = new Structure(blocks, name, category, creator.getName(), 1, 1, lawfulHeight, new RealEstateData[0]);
+		fetchBlocksFromChunk();
+		structure = new Structure(blocks, tileStates, name, category, creator.getName(), 1, 1, lawfulHeight, new RealEstateData[0]);
 	}
 
 	public static void onBeginCreateNewStructure(Player p, String name, String category, boolean requireInfoline) {
@@ -43,7 +47,7 @@ public class StructureFactory {
 		StructureFactory sf = new StructureFactory(p.getWorld(), pos, name, category, requireInfoline, p);
 
 		// Done
-		StructureLibrary.registerStructure(sf.structure);
+		StructureLibrary.registerStructure(sf.structure, category);
 		if (sf.structure.writeToFile()) {
 			p.sendMessage("Structure saved as: " + name);
 		} else {
@@ -65,15 +69,17 @@ public class StructureFactory {
 		return true;
 	}
 
-	private BlockData[][][] fetchBlocksFromChunk() {
+	private void fetchBlocksFromChunk() {
 		int height = Math.max(getStructureHeightPeak() + undergroundLayers, undergroundLayers+4);
-		BlockData[][][] blocks = new BlockData[16][height][16];
+		blocks = new BlockData[16][height][16];
+		tileStates = new TileState[16][height][16];
 		int dataX = 0;
 		for (int x = chunk.getBlockX(); x < chunk.getBlockX() + 16; x++) {
 			int dataZ = 0;
 			for (int z = chunk.getBlockZ(); z < chunk.getBlockZ() + 16; z++) {
 				int dataY = 0;
 				for (int y = 64 - undergroundLayers; y < 64 + height - undergroundLayers; y++) {
+					//TODO get TileState data
 					blocks[dataX][dataY][dataZ] = world.getBlockAt(x, y, z).getBlockData();
 					dataY++;
 				}
@@ -81,7 +87,6 @@ public class StructureFactory {
 			}
 			dataX++;
 		}
-		return blocks;
 	}
 
 	private int getStructureHeightPeak() {

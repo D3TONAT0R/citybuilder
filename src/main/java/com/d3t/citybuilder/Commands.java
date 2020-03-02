@@ -58,6 +58,59 @@ public class Commands {
 				}
 				return true;
 			}
+		} else if (c.equalsIgnoreCase("reloadstructurefiles")) {
+			StructureLibrary.loadSavedStructures();
+			int success = StructureLibrary.successfullyLoadedFiles;
+			int fail = StructureLibrary.failedToLoadFiles;
+			if(success > 0) {
+				p.sendMessage("§aLoaded "+success+" structures");
+			}
+			if(fail > 0) {
+				p.sendMessage("§c"+fail+" structures failed to load");
+			}
+			if(success == 0 && fail == 0) {
+				p.sendMessage("§6Warning: No structures were loaded!");
+			}
+			return true;
+		} else if (c.equalsIgnoreCase("verifystructure")) {
+			if(args.length > 0) {
+				Structure s = StructureLibrary.allStructures.get(args[0]);
+				if(s != null) {
+					boolean b = s.verifyIntegrity();
+					if(b) {
+						p.sendMessage("§aStructure integrity is OK");
+					} else {
+						p.sendMessage("§cStructure integrity detected errorneous data");
+					}
+				} else {
+					p.sendMessage("§cStructure "+args[0]+" not found");
+				}
+				return true;
+			}
+		} else if (c.equalsIgnoreCase("savecities")) {
+			SaveHandler.saveCities();
+			if(SaveHandler.successfullySavedCities > 0) {
+				p.sendMessage("§aSaved "+SaveHandler.successfullySavedCities+" cities");
+			}
+			if(SaveHandler.failedToSaveCities > 0) {
+				p.sendMessage("§c"+SaveHandler.failedToSaveCities+" cities failed to save");
+			}
+			if(SaveHandler.successfullySavedCities == 0 && SaveHandler.failedToSaveCities == 0) {
+				p.sendMessage("§6Warning: No cities were saved!");
+			}
+			return true;
+		} else if (c.equalsIgnoreCase("loadcities")) {
+			SaveHandler.loadCities();
+			if(SaveHandler.successfullyLoadedCities > 0) {
+				p.sendMessage("§aLoaded "+SaveHandler.successfullyLoadedCities+" cities");
+			}
+			if(SaveHandler.failedToSaveCities > 0) {
+				p.sendMessage("§c"+SaveHandler.failedToLoadCities+" cities failed to load");
+			}
+			if(SaveHandler.successfullyLoadedCities == 0 && SaveHandler.failedToLoadCities == 0) {
+				p.sendMessage("§6Warning: No cities were loaded!");
+			}
+			return true;
 		}
 		return false;
 	}

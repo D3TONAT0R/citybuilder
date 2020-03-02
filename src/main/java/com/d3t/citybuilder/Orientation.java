@@ -1,6 +1,7 @@
 package com.d3t.citybuilder;
 
 public enum Orientation {
+	NONE,
 	NORTH,
 	EAST,
 	SOUTH,
@@ -15,6 +16,6 @@ public enum Orientation {
 		if(s.equalsIgnoreCase("e") || s.equalsIgnoreCase("east")) return EAST;
 		if(s.equalsIgnoreCase("s") || s.equalsIgnoreCase("south")) return SOUTH;
 		if(s.equalsIgnoreCase("w") || s.equalsIgnoreCase("west")) return WEST;
-		return SOUTH;
+		return NONE;
 	}
 }
