@@ -12,6 +12,7 @@ public class City {
 	public String mayorName;
 	public HashMap<Integer, Zone> chunks;
 	public ChunkPosition origin;
+	public ArrayList<ConstructionData> constructions;
 	
 	public String cityName;
 	
@@ -67,7 +68,11 @@ public class City {
 	}
 	
 	public void update() {
-		
+		ConstructionData toBeRemoved = null;
+		for(ConstructionData c : constructions) {
+			if(!c.updateConstruction()) toBeRemoved = c;
+		}
+		if(toBeRemoved != null) constructions.remove(toBeRemoved);
 	}
 	
 	public boolean setZone(Player sender, int chunkX, int chunkZ, ZoneType zone, ZoneDensity density) {

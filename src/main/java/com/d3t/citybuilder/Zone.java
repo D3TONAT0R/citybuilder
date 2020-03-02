@@ -91,14 +91,14 @@ public class Zone {
 				makeOutline();
 			} else {
 				s.build(this, orientation);
-				building = new ConstructionData(s.structureName, orientation);
+				building = new ConstructionData(s.structureName, orientation, false);
 			}
 		} else {
 			if(s == null) {
 				buildRoad();
 			} else {
 				s.build(this, Orientation.NONE);
-				building = new ConstructionData(s.structureName, Orientation.NONE);
+				building = new ConstructionData(s.structureName, Orientation.NONE, true);
 			}
 		}
 		if(updateNeighbors) {

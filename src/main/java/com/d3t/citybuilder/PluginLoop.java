@@ -15,7 +15,7 @@ public class PluginLoop implements Runnable {
 	}
 
 	private void onTickUpdate() {
-		
+		for(City c : CBMain.cities.values()) c.update();
 	}
 	
 	private void onSecondUpdate() {

@@ -8,8 +8,12 @@ public class BlockCategories {
 		Material.GRASS_BLOCK, Material.DIRT, Material.SAND, Material.PODZOL, Material.COARSE_DIRT, Material.GRAVEL, Material.WATER
 	};
 	
-	public static final Material[] editDenyingBlock = new Material[] {
+	public static final Material[] editDenyingBlocks = new Material[] {
 		Material.COMMAND_BLOCK, Material.REPEATING_COMMAND_BLOCK, Material.CHAIN_COMMAND_BLOCK, Material.STRUCTURE_BLOCK, Material.JIGSAW
+	};
+	
+	public static final Material[] interiorFinishingStageBlocks = new Material[] {
+		Material.GLASS, Material.GLASS_PANE,
 	};
 	
 	private static boolean contains(Material[] arr, Material block) {
@@ -24,6 +28,10 @@ public class BlockCategories {
 	}
 	
 	public static boolean isEditDenyingBlock(Material block) {
-		return contains(editDenyingBlock, block);
+		return contains(editDenyingBlocks, block);
+	}
+	
+	public static boolean isInteriorStageBlock(Material block) {
+		return contains(interiorFinishingStageBlocks, block);
 	}
 }
