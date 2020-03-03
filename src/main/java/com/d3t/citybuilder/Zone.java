@@ -35,7 +35,7 @@ public class Zone {
 		neighborRoadmap = getNeighborRoadmap();
 	}
 	
-	public Zone(City c, World w, ChunkPosition cp, ZoneType zone, ZoneDensity dens, int hlimit, int extra, int avgterrain, ConstructionData cons) {
+	public Zone(City c, World w, ChunkPosition cp, ZoneType zone, ZoneDensity dens, int hlimit, int extra, int avgterrain) {
 		city = c;
 		world = w;
 		pos = cp;
@@ -44,7 +44,6 @@ public class Zone {
 		heightLimit = hlimit;
 		extraData = extra;
 		averageTerrainLevel = avgterrain;
-		building = cons;
 	}
 	
 	public void reZone(ZoneType zt, ZoneDensity zd) {
@@ -91,14 +90,14 @@ public class Zone {
 				makeOutline();
 			} else {
 				s.build(this, orientation);
-				building = new ConstructionData(s.structureName, orientation, false);
+				building = new ConstructionData(this, s.structureName, orientation, false);
 			}
 		} else {
 			if(s == null) {
 				buildRoad();
 			} else {
 				s.build(this, Orientation.NONE);
-				building = new ConstructionData(s.structureName, Orientation.NONE, true);
+				building = new ConstructionData(this, s.structureName, Orientation.NONE, true);
 			}
 		}
 		if(updateNeighbors) {
@@ -255,17 +254,18 @@ public class Zone {
 	
 	public static Zone loadFromSaveData(World w, String fulldata, City c) {
 		try {
-		String[] data = fulldata.split(" ");
-		ChunkPosition pos = new ChunkPosition(Integer.parseInt(data[0]));
-		String[] split = data[1].split(",");
-		String[] zoneSplit = split[0].split("@");
-		ZoneType zonetype = ZoneType.valueOf(zoneSplit[0]);
-		ZoneDensity zonedensity = ZoneDensity.valueOf(zoneSplit[1]);
-		int heightlimit = Integer.parseInt(split[1]);
-		byte extradata = Byte.parseByte(split[2]);
-		int averageterrain = Integer.parseInt(split[3]);
-		ConstructionData building = ConstructionData.loadFromSaveString(split[4]);
-		return new Zone(c, w, pos, zonetype, zonedensity, heightlimit, extradata, averageterrain, building);
+			String[] data = fulldata.split(" ");
+			ChunkPosition pos = new ChunkPosition(Integer.parseInt(data[0]));
+			String[] split = data[1].split(",");
+			String[] zoneSplit = split[0].split("@");
+			ZoneType zonetype = ZoneType.valueOf(zoneSplit[0]);
+			ZoneDensity zonedensity = ZoneDensity.valueOf(zoneSplit[1]);
+			int heightlimit = Integer.parseInt(split[1]);
+			byte extradata = Byte.parseByte(split[2]);
+			int averageterrain = Integer.parseInt(split[3]);
+			Zone zone = new Zone(c, w, pos, zonetype, zonedensity, heightlimit, extradata, averageterrain);
+			zone.building = ConstructionData.loadFromSaveString(zone, split[4]);
+			return zone;
 		}
 		catch(Exception e) {
 			System.out.println("Failed to load Zone from save data:");

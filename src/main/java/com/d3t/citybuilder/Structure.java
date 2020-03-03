@@ -93,6 +93,40 @@ public class Structure {
 			return blocks[x][y][z];
 		}
 	}
+	
+	// TODO: Rotate angled signs & banners
+	private BlockData applyRotation(BlockData data, int steps) {
+		data = data.clone();
+		final BlockFace[] blockFaces = new BlockFace[] { BlockFace.SOUTH, BlockFace.WEST, BlockFace.NORTH,
+				BlockFace.EAST };
+		if (data instanceof Directional) {
+			Directional d = (Directional) data;
+			BlockFace face = d.getFacing();
+			int r = 0;
+			if (face == BlockFace.SOUTH)
+				r = 0;
+			else if (face == BlockFace.WEST)
+				r = 1;
+			else if (face == BlockFace.NORTH)
+				r = 2;
+			else if (face == BlockFace.EAST)
+				r = 3;
+			d.setFacing(blockFaces[(r + steps) % 4]);
+			return d;
+		} else if (data instanceof MultipleFacing) {
+			MultipleFacing mf = (MultipleFacing) data;
+			boolean[] facings = new boolean[4];
+			facings[0] = mf.hasFace(BlockFace.SOUTH);
+			facings[1] = mf.hasFace(BlockFace.WEST);
+			facings[2] = mf.hasFace(BlockFace.NORTH);
+			facings[3] = mf.hasFace(BlockFace.EAST);
+			mf.setFace(BlockFace.SOUTH, facings[(0 + steps) % 4]);
+			mf.setFace(BlockFace.WEST, facings[(1 + steps) % 4]);
+			mf.setFace(BlockFace.NORTH, facings[(2 + steps) % 4]);
+			mf.setFace(BlockFace.EAST, facings[(3 + steps) % 4]);
+		}
+		return data;
+	}
 
 	public boolean writeToFile() {
 		String subfolder = "structures/";
