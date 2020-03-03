@@ -50,7 +50,7 @@ public class Zone {
 		neighborRoadmap = getNeighborRoadmap();
 		zoneType = zt;
 		density = zd;
-		build(null, Orientation.SOUTH, false, true);
+		build(null, Orientation.SOUTH, false, true, false);
 	}
 	
 	public ZoneDensity getDensity() {
@@ -83,21 +83,20 @@ public class Zone {
 		return heights;
 	}
 	
-	public void build(Structure s, Orientation orientation, boolean force, boolean updateNeighbors) {
+	public void build(Structure s, Orientation orientation, boolean force, boolean updateNeighbors, boolean buildInstantly) {
 		//if(!force && isBuilt()) return;
 		if(zoneType != ZoneType.TRANSPORT) {
 			if(s == null) {
 				makeOutline();
 			} else {
-				s.build(this, orientation);
-				building = new ConstructionData(this, s.structureName, orientation, false);
+				s.startBuild(this, orientation);
 			}
 		} else {
 			if(s == null) {
 				buildRoad();
 			} else {
-				s.build(this, Orientation.NONE);
-				building = new ConstructionData(this, s.structureName, Orientation.NONE, true);
+				s.startBuild(this, Orientation.NONE);
+				building = new ConstructionData(this, s, Orientation.NONE, true);
 			}
 		}
 		if(updateNeighbors) {
@@ -114,7 +113,7 @@ public class Zone {
 		}
 		TrafficStructurePieces collection = StructureLibrary.trafficStructures.get("road1");
 		if(collection != null) {
-			build(collection.getStructureForChunk(conn), Orientation.NONE, true, false);
+			build(collection.getStructureForChunk(conn), Orientation.NONE, true, false, true);
 		} else {
 			System.out.println("collection road1 does not exist!");
 		}
@@ -264,7 +263,7 @@ public class Zone {
 			byte extradata = Byte.parseByte(split[2]);
 			int averageterrain = Integer.parseInt(split[3]);
 			Zone zone = new Zone(c, w, pos, zonetype, zonedensity, heightlimit, extradata, averageterrain);
-			zone.building = ConstructionData.loadFromSaveString(zone, split[4]);
+			if(!split[4].equalsIgnoreCase("null")) zone.building = ConstructionData.loadFromSaveString(zone, split[4]);
 			return zone;
 		}
 		catch(Exception e) {

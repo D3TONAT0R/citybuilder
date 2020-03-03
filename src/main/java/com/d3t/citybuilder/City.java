@@ -12,7 +12,7 @@ public class City {
 	public String mayorName;
 	public HashMap<Integer, Zone> chunks;
 	public ChunkPosition origin;
-	public ArrayList<ConstructionData> constructions;
+	public ArrayList<ConstructionData> constructions = new ArrayList<ConstructionData>();
 	
 	public String cityName;
 	
@@ -70,7 +70,7 @@ public class City {
 	public void update() {
 		ConstructionData toBeRemoved = null;
 		for(ConstructionData c : constructions) {
-			if(!c.updateConstruction()) toBeRemoved = c;
+			if(c == null || !c.updateConstruction()) toBeRemoved = c;
 		}
 		if(toBeRemoved != null) constructions.remove(toBeRemoved);
 	}
@@ -87,12 +87,12 @@ public class City {
 		}
 	}
 	
-	public boolean buildStructureAtChunk(String structureName, ChunkPosition pos, Orientation orientation, boolean forceBuild) {
+	public boolean buildStructureAtChunk(String structureName, ChunkPosition pos, Orientation orientation, boolean forceBuild, boolean buildInstantly) {
 		int index = pos.getIndex();
 		if(chunks.containsKey(index)) {
 			Structure s = StructureLibrary.allStructures.get(structureName);
 			if(s != null) {
-				chunks.get(index).build(s, orientation, forceBuild, true);
+				chunks.get(index).build(s, orientation, forceBuild, true, buildInstantly);
 				return true;
 			} else {
 				System.out.println("Can't build '"+structureName+"' here, the structure does not exist");
@@ -110,5 +110,9 @@ public class City {
 		neighbors[2] = chunks.get(new ChunkPosition(x, z+1).getIndex());
 		neighbors[3] = chunks.get(new ChunkPosition(x-1, z).getIndex());
 		return neighbors;
+	}
+	
+	public void registerConstruction(ConstructionData cons) {
+		if(!constructions.contains(cons)) constructions.add(cons);
 	}
 }

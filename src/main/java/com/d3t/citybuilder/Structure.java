@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.MalformedInputException;
 import java.util.ArrayList;
 
-import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.TileState;
 import org.bukkit.block.data.BlockData;
@@ -67,8 +66,15 @@ public class Structure {
 		return blocks[0].length;
 	}
 
-	public void build(Zone zone, Orientation facing) {
-		
+	public void startBuild(Zone zone, Orientation facing) {
+		ConstructionData cd = new ConstructionData(zone, this, facing, false);
+		zone.building = cd;
+		zone.city.registerConstruction(cd);
+	}
+	
+	public void buildNow(Zone zone, Orientation facing) {
+		ConstructionData cd = new ConstructionData(zone, this, facing, true);
+		zone.building = cd;
 	}
 
 	public int getStructureVolume() {

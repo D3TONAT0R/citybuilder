@@ -13,6 +13,8 @@ public enum ConstructionStage {
 		if(s == IDLE) {
 			return DEMOLITION;
 		} else if(s == DEMOLITION) {
+			return EXCAVATION;
+		} else if(s == EXCAVATION) {
 			return BASE_CONSTRUCTION;
 		} else if(s == BASE_CONSTRUCTION) {
 			return INTERIOR_FINISHING;

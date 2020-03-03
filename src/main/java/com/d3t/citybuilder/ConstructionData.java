@@ -7,11 +7,11 @@ import org.bukkit.util.Vector;
 
 public class ConstructionData {
 	
-	public static final int maxProgressIterations = 64;
+	public static final int maxProgressIterations = 256;
 	
 	public Zone zone;
 	
-	public String structureName;
+	//public String structureName;
 	
 	public Structure structure;
 	public Orientation orientation;
@@ -20,75 +20,106 @@ public class ConstructionData {
 	public float constructionProgress = 1f;
 	public int constructionBlockProgress = -1;
 	
-	public ConstructionData(Zone z, String structure, Orientation orient, boolean buildInstantly) {
+	public ConstructionData(Zone z, Structure structure, Orientation orient, boolean buildInstantly) {
 		zone = z;
-		structureName = structure;
+		this.structure = structure;
 		orientation = orient;
-		constructionBlockProgress = StructureFactory.undergroundLayers;
+		constructionBlockProgress = 0;
+		if(buildInstantly) constructAll();
 	}
 	
 	public String getSaveString() {
-		return structureName+"@"+orientation;
+		return structure.structureName+"@"+orientation;
 	}
 	
 	public boolean updateConstruction() {
 		if(constructionStage == ConstructionStage.DONE) return false;
-		
+		construct();
 		return true;
 	}
 	
 	private void onFinishConstruction() {
-		
+		System.out.println("CONSTRUCTION DONE!");
 	}
 	
 	public static ConstructionData loadFromSaveString(Zone z, String data) {
 		String[] dataSplit = data.split("@");
 		int progress = Integer.parseInt(dataSplit[1]);
-		ConstructionData cdata = new ConstructionData(z, dataSplit[0], Orientation.valueOf(dataSplit[1]), progress >= 1);
+		ConstructionData cdata = new ConstructionData(z, StructureLibrary.allStructures.get(dataSplit[0]), Orientation.valueOf(dataSplit[1]), progress >= 1);
 		cdata.constructionBlockProgress = progress; 
 		return cdata;
 	}
 	
 	private void construct() {
 		int i = 0;
-		while(i < maxProgressIterations) {
+		boolean b = false;
+		Vector vec = null;
+		while(!b && i < maxProgressIterations) {
 			i++;
-			if(constructionStage == ConstructionStage.DONE) break;
-			Vector vec = increaseConstructionProgress();
+			if(constructionStage == ConstructionStage.DONE) return;
+			vec = increaseConstructionProgress();
 			if(vec != null) {
-				processBlockForStage(zone, vec.getBlockX(), vec.getBlockY(), vec.getBlockZ(), structure.getBlockForOrientation(vec.getBlockX(), vec.getBlockY(), vec.getBlockZ(), orientation));
+				BlockData data = Material.AIR.createBlockData();
+				if(constructionStage != ConstructionStage.DEMOLITION && constructionStage != ConstructionStage.EXCAVATION) {
+					data = structure.getBlockForOrientation(vec.getBlockX(), vec.getBlockY(), vec.getBlockZ(), orientation);
+				}
+				b = processBlockForStage(zone, vec.getBlockX(), vec.getBlockY(), vec.getBlockZ(), data);
+			}
+			System.out.println(String.format("Block %s/%s, x%s y%s z%s, stage: %s", constructionBlockProgress, structure.getStructureVolume(), vec.getBlockX(), vec.getBlockY(), vec.getBlockZ(), constructionStage));
+		}
+	}
+	
+	private void constructAll() {
+		for(int y = 0; y < structure.getTotalHeight(); y++) {
+			for(int z = 0; z < structure.sizeZ*16; z++) {
+				for(int x = 0; x < structure.sizeX*16; x++) {
+					Block source = zone.world.getBlockAt(zone.pos.getBlockX() + x, zone.averageTerrainLevel - StructureFactory.undergroundLayers + y, zone.pos.getBlockZ() + z);
+					setAir(source);
+					setBlockAt(source,structure.getBlockForOrientation(x,y,z,orientation));
+				}
 			}
 		}
+		constructionStage = ConstructionStage.DONE;
 	}
 	
 	public Vector getConstructingBlockLocation() {
 		int x,y,z = 0;
 		int p = constructionBlockProgress;
 		if(constructionStage == ConstructionStage.IDLE || constructionStage == ConstructionStage.DONE) return null;
-		if(constructionStage == ConstructionStage.EXCAVATION) {
-			if(p >= 16*16*StructureFactory.undergroundLayers) {
-				return null;
-			} else {
-				y = (int)Math.floor(p/16f/16f);
-				z = (int)Math.floor((p-y)/16f);
-				x = p-y-z;
-				return new Vector(x,y,z);
-			}
+		if(constructionStage == ConstructionStage.DEMOLITION) {
+			y = 128-(int)Math.floor(p/16f/16f);
+			z = (int)Math.floor((p/16f))%16;
+			x = p % 16;
+			if(y <= zone.averageTerrainLevel-StructureFactory.undergroundLayers) return null;
+			return new Vector(x,y-zone.averageTerrainLevel+StructureFactory.undergroundLayers,z);
+		} else if(constructionStage == ConstructionStage.EXCAVATION) {
+			y = StructureFactory.undergroundLayers-(int)Math.floor(p/16f/16f);
+			z = (int)Math.floor((p/16f))%16;
+			x = p % 16;
+			if(y > StructureFactory.undergroundLayers) return null;
+			return new Vector(x,y,z);
 		} else {
 			y = (int)Math.floor(p/16f/16f);
-			z = (int)Math.floor((p-y)/16f);
-			x = p-y-z;
+			z = (int)Math.floor((p/16f))%16;
+			x = p % 16;
+			if(y >= structure.blocks[0].length) return null;
 			return new Vector(x,y,z);
 		}
 	}
 	
 	private Vector increaseConstructionProgress() {
 		constructionBlockProgress++;
-		int totalVolume = structure.getStructureVolume();
+		//int totalVolume = structure.getStructureVolume();
 		Vector loc = getConstructingBlockLocation();
 		if(loc == null) {
 			constructionStage = constructionStage.getNextStage(constructionStage);
+			System.out.println("Construction works advanced to stage "+constructionStage.toString());
+			constructionBlockProgress = 0;
 			loc = getConstructingBlockLocation();
+		}
+		if(constructionStage == ConstructionStage.DONE) {
+			onFinishConstruction();
+			return null;
 		}
 		return loc;
 	}
@@ -96,11 +127,14 @@ public class ConstructionData {
 	private boolean processBlockForStage(Zone zone, int x, int y, int z, BlockData target) {
 		int underground = StructureFactory.undergroundLayers;
 		ChunkPosition chunk = zone.pos;
-		Block source = zone.world.getBlockAt(chunk.getBlockX() + x, zone.averageTerrainLevel - underground + y, chunk.getBlockZ() + z);
+		int worldX = chunk.getBlockX() + x;
+		int worldY = zone.averageTerrainLevel - underground + y;
+		int worldZ = chunk.getBlockZ() + z;
+		Block source = zone.world.getBlockAt(worldX, worldY, worldZ);
 		if(source == null) return false;
 		if(constructionStage == ConstructionStage.DEMOLITION) {
 			//Remove everything above ground
-			if(y >= zone.averageTerrainLevel) {
+			if(worldY >= zone.averageTerrainLevel) {
 				return setAir(source);
 			}
 		} else if(constructionStage == ConstructionStage.EXCAVATION) {

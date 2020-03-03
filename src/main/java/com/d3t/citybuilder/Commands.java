@@ -51,7 +51,7 @@ public class Commands {
 				if(city != null) {
 					Orientation orientation = Orientation.SOUTH;
 					if(args.length > 1) orientation = Orientation.fromString(args[1]);
-					boolean result = city.buildStructureAtChunk(args[0], new ChunkPosition(p.getLocation()), orientation, true);
+					boolean result = city.buildStructureAtChunk(args[0], new ChunkPosition(p.getLocation()), orientation, true, false);
 					if(!result) p.sendMessage("Failed to build structure! See log for details.");
 				} else {
 					p.sendMessage("There is no city around to place the building!");
