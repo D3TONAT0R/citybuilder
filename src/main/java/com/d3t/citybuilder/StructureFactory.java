@@ -2,8 +2,14 @@ package com.d3t.citybuilder;
 
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Banner;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
+import org.bukkit.block.Skull;
 import org.bukkit.block.TileState;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Lectern;
 import org.bukkit.entity.Player;
 
 public class StructureFactory {
@@ -79,8 +85,12 @@ public class StructureFactory {
 			for (int z = chunk.getBlockZ(); z < chunk.getBlockZ() + 16; z++) {
 				int dataY = 0;
 				for (int y = 64 - undergroundLayers; y < 64 + height - undergroundLayers; y++) {
-					//TODO get TileState data
-					blocks[dataX][dataY][dataZ] = world.getBlockAt(x, y, z).getBlockData();
+					Block b = world.getBlockAt(x, y, z);
+					blocks[dataX][dataY][dataZ] = b.getBlockData();
+					BlockState state = b.getState();
+					if(state instanceof TileState && shouldSaveTileState((TileState)state)) {
+						tileStates[dataX][dataY][dataZ] = (TileState)state;
+					}
 					dataY++;
 				}
 				dataZ++;
@@ -89,6 +99,14 @@ public class StructureFactory {
 		}
 	}
 
+	private boolean shouldSaveTileState(TileState state) {
+		if(state instanceof Banner || state instanceof Sign || state instanceof Skull) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	private int getStructureHeightPeak() {
 		int highest = 0;
 		for (int x = chunk.getBlockX(); x < chunk.getBlockX() * +16; x++) {

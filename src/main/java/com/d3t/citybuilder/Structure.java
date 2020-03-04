@@ -8,12 +8,22 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.MalformedInputException;
 import java.util.ArrayList;
+import java.util.List;
 
+import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Banner;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Sign;
+import org.bukkit.block.Skull;
 import org.bukkit.block.TileState;
+import org.bukkit.block.banner.Pattern;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.MultipleFacing;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
+
+import com.deanveloper.skullcreator.SkullCreator;
 
 public class Structure {
 
@@ -71,7 +81,7 @@ public class Structure {
 		zone.building = cd;
 		zone.city.registerConstruction(cd);
 	}
-	
+
 	public void buildNow(Zone zone, Orientation facing) {
 		ConstructionData cd = new ConstructionData(zone, this, facing, true);
 		zone.building = cd;
@@ -80,7 +90,7 @@ public class Structure {
 	public int getStructureVolume() {
 		return blocks.length * blocks[0].length * blocks[0][0].length;
 	}
-	
+
 	public BlockData getBlockForOrientation(int x, int y, int z, Orientation orientation) {
 		switch (orientation) {
 		case SOUTH:
@@ -99,7 +109,7 @@ public class Structure {
 			return blocks[x][y][z];
 		}
 	}
-	
+
 	// TODO: Rotate angled signs & banners
 	private BlockData applyRotation(BlockData data, int steps) {
 		data = data.clone();
@@ -176,7 +186,16 @@ public class Structure {
 				}
 			}
 			stream.write((tileDataSaveMark + "\n").getBytes());
-			// TODO: write tileData
+			for (y = 0; y < blockTiles[0].length; y++) {
+				for (z = 0; z < blockTiles[0][0].length; z++) {
+					for (x = 0; x < blockTiles.length; x++) {
+						if(blockTiles[x][y][z] != null) {							
+							stream.write(String.format("%s,%s,%s:%s", x, y, z, getTileStateSaveString(blockTiles[x][y][z])).getBytes());
+						}
+					}
+					stream.write("\n".getBytes());
+				}
+			}
 			stream.close();
 			System.out.println("Structure file created: " + file.getAbsolutePath());
 			return true;
@@ -186,6 +205,37 @@ public class Structure {
 			e.printStackTrace();
 			return false;
 		}
+	}
+
+	public static String getTileStateSaveString(TileState state) {
+		String data;
+		if (state instanceof Sign) {
+			data = "SIGN:";
+			Sign sign = (Sign) state;
+			data += sign.getLine(0) + "§";
+			data += sign.getLine(1) + "§";
+			data += sign.getLine(2) + "§";
+			data += sign.getLine(3);
+		} else if (state instanceof Banner) {
+			data = "BANR:";
+			Banner banner = (Banner) state;
+			data += banner.getBaseColor().name() + ",";
+			List<Pattern> patterns = banner.getPatterns();
+			for (int i = 0; i < patterns.size(); i++) {
+				Pattern pat = patterns.get(i);
+				data += pat.getPattern().name() + "@" + pat.getColor().name();
+				if (i < patterns.size() - 1)
+					data += ",";
+			}
+		} else if(state instanceof Skull) {
+			data = "SKUL:";
+			OfflinePlayer skullPlayer = ((Skull)state).getOwningPlayer();
+			//TODO: fetch skull data!
+			//ItemStack stack = SkullCreator.withBase64(item, base64)
+		} else {
+			data = "UNKNOWN";
+		}
+		return data;
 	}
 
 	public static Structure loadFromFile(File file) {
