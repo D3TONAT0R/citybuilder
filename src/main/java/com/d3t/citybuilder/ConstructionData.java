@@ -60,12 +60,12 @@ public class ConstructionData {
 			vec = increaseConstructionProgress();
 			if(vec != null) {
 				BlockData data = Material.AIR.createBlockData();
-				if(constructionStage != ConstructionStage.DEMOLITION && constructionStage != ConstructionStage.EXCAVATION) {
+				if(constructionStage != ConstructionStage.DEMOLITION) {
 					data = structure.getBlockForOrientation(vec.getBlockX(), vec.getBlockY(), vec.getBlockZ(), orientation);
 				}
 				b = processBlockForStage(zone, vec.getBlockX(), vec.getBlockY(), vec.getBlockZ(), data);
 			}
-			System.out.println(String.format("Block %s/%s, x%s y%s z%s, stage: %s", constructionBlockProgress, structure.getStructureVolume(), vec.getBlockX(), vec.getBlockY(), vec.getBlockZ(), constructionStage));
+			if(vec != null) System.out.println(String.format("Block %s/%s, x%s y%s z%s, stage: %s", constructionBlockProgress, structure.getStructureVolume(), vec.getBlockX(), vec.getBlockY(), vec.getBlockZ(), constructionStage));
 		}
 	}
 	
@@ -90,13 +90,14 @@ public class ConstructionData {
 			y = 128-(int)Math.floor(p/16f/16f);
 			z = (int)Math.floor((p/16f))%16;
 			x = p % 16;
-			if(y <= zone.averageTerrainLevel-StructureFactory.undergroundLayers) return null;
+			if(y < 0) return null;
 			return new Vector(x,y-zone.averageTerrainLevel+StructureFactory.undergroundLayers,z);
 		} else if(constructionStage == ConstructionStage.EXCAVATION) {
-			y = StructureFactory.undergroundLayers-(int)Math.floor(p/16f/16f);
+			y = (int)Math.floor(p/16f/16f);
 			z = (int)Math.floor((p/16f))%16;
 			x = p % 16;
-			if(y > StructureFactory.undergroundLayers) return null;
+			y = StructureFactory.undergroundLayers-y;
+			if(y < 0) return null;
 			return new Vector(x,y,z);
 		} else {
 			y = (int)Math.floor(p/16f/16f);
