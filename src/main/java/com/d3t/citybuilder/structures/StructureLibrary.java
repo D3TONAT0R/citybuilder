@@ -1,44 +1,12 @@
 package com.d3t.citybuilder.structures;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-
-import com.d3t.citybuilder.framework.CBMain;
 
 public class StructureLibrary {
 
 	public static HashMap<String, Structure> allStructures;
 	public static HashMap<String, HashMap<String, Structure>> categories;
 	public static HashMap<String, TrafficStructurePieces> trafficStructures;
-
-	public static int successfullyLoadedFiles = 0;
-	public static int failedToLoadFiles = 0;
-
-	public static void loadSavedStructures() {
-		successfullyLoadedFiles = 0;
-		failedToLoadFiles = 0;
-		allStructures = new HashMap<String, Structure>();
-		categories = new HashMap<String, HashMap<String, Structure>>();
-		trafficStructures = new HashMap<String, TrafficStructurePieces>();
-		File dir = new File(CBMain.getDataFolderPath().getAbsolutePath() + "/structures/");
-		System.out.println("loading structures ...");
-		if (dir.isDirectory()) {
-			for (File f : listFiles(dir)) {
-				System.out.println("Loading structure file " + f.getName());
-				Structure s = Structure.loadFromFile(f);
-				if (s != null) {
-					registerStructure(s, s.category);
-					successfullyLoadedFiles++;
-				} else {
-					System.out.println("Failed to load structure file " + f.getName());
-					failedToLoadFiles++;
-				}
-			}
-		} else {
-			System.out.println("Failed to load structures! Not a directory: " + dir.getAbsolutePath());
-		}
-	}
 
 	public static void registerStructure(Structure s, String cat) {
 		allStructures.put(s.structureName, s);
@@ -85,17 +53,5 @@ public class StructureLibrary {
 		case "cross_x": collection.crossX = s; break;
 		default: System.out.println("Registering traffic structure failed: "+name);
 		}
-	}
-
-	private static ArrayList<File> listFiles(File directory) {
-		ArrayList<File> files = new ArrayList<File>();
-		for (File f : directory.listFiles()) {
-			if (f.isDirectory()) {
-				files.addAll(listFiles(f));
-			} else if (f.getName().endsWith(Structure.fileExtension)) {
-				files.add(f);
-			}
-		}
-		return files;
 	}
 }

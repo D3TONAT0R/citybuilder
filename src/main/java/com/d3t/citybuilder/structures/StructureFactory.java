@@ -9,10 +9,10 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.Skull;
 import org.bukkit.block.TileState;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.type.Lectern;
 import org.bukkit.entity.Player;
 
 import com.d3t.citybuilder.framework.ChunkPosition;
+import com.d3t.citybuilder.io.StructureSaveUtil;
 import com.d3t.citybuilder.zones.RealEstateData;
 
 public class StructureFactory {
@@ -57,7 +57,7 @@ public class StructureFactory {
 
 		// Done
 		StructureLibrary.registerStructure(sf.structure, category);
-		if (sf.structure.writeToFile()) {
+		if (StructureSaveUtil.saveStructure(sf.structure)) {
 			p.sendMessage("Structure saved as: " + name);
 		} else {
 			p.sendMessage("Failed to save structure: " + name);

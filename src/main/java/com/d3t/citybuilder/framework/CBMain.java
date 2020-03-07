@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -16,8 +17,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.d3t.citybuilder.cities.City;
-import com.d3t.citybuilder.io.SaveHandler;
-import com.d3t.citybuilder.structures.StructureLibrary;
+import com.d3t.citybuilder.io.CitySaveUtil;
+import com.d3t.citybuilder.io.StructureSaveUtil;
 import com.d3t.citybuilder.userinteractive.ClickEventHandler;
 import com.d3t.citybuilder.userinteractive.HotbarHandler;
 
@@ -38,6 +39,10 @@ public final class CBMain extends JavaPlugin {
 	public static HashMap<Player, Integer> playerEditModes;
 	public static HashMap<Player, City> currentlyEditingCity;
 
+	public static Server getServerInstance() {
+		return INSTANCE.getServer();
+	}
+	
 	@Override
 	public void onEnable() {
 		INSTANCE = this;
@@ -48,13 +53,13 @@ public final class CBMain extends JavaPlugin {
 		commandHandler = new Commands(getServer());
 		getServer().getScheduler().runTaskTimer(this, new PluginLoop(), 20, 1);
 		getServer().getPluginManager().registerEvents(new ClickEventHandler(), this);
-		SaveHandler.loadCities();
-		StructureLibrary.loadSavedStructures();
+		CitySaveUtil.loadCities();
+		StructureSaveUtil.loadSavedStructures();
 	}
 	
 	 @Override
 	 public void onDisable() {
-		 SaveHandler.saveCities();
+		 CitySaveUtil.saveCities();
 	 }
 
 	private boolean setupEconomy() {
@@ -87,16 +92,26 @@ public final class CBMain extends JavaPlugin {
 		return getServer().getPlayer(offPlayer.getUniqueId());
 	}
 	
-	public static boolean createCity(String cityName, String owner, World w, int chunkX, int chunkZ) {
+	public static boolean createCity(Player creator, String cityName, World w, int chunkX, int chunkZ) {
+		float closestCity = getClosestCityDistance(w, chunkX, chunkZ);
+		if(closestCity < City.minChunkDistanceBetweenCities) {
+			creator.sendMessage("Too close to another city!");
+			return false;
+		}
+		City c = getCityAtChunk(w, new ChunkPosition(chunkX, chunkZ));
+		if(c != null) {
+			creator.sendMessage("This area already belongs to "+c.cityName+"! Choose another area.");
+		}
 		for(String key : cities.keySet()) {
 			if(key.equalsIgnoreCase(cityName)) {
 				log.warning(String.format("City named '%s' already exists!", cityName));
 				return false;
 			}
 		}
-		City newcity = new City(w, chunkX, chunkZ, owner, cityName);
+		City newcity = new City(w, chunkX, chunkZ, creator.getName(), cityName);
 		cities.put(cityName, newcity);
-		log.warning(String.format("%s has created a new City: '%s'!", owner, cityName));
+		log.info(String.format("%s has created a new City: '%s'!", creator.getName(), cityName));
+		creator.sendMessage("You founded: " + cityName + "!");
 		return true;
 	}
 	
@@ -137,6 +152,19 @@ public final class CBMain extends JavaPlugin {
 		return closest;
 	}
 	
+	public static float getClosestCityDistance(World w, int chunkX, int chunkZ) {
+		float dist = 9999999f;
+		for(City c : cities.values()) {
+			if(c.world == w) {
+				float d2 = distance2d(c.origin.x, c.origin.z, chunkX, chunkZ);
+				if(d2 < dist) {
+					dist = d2;
+				}
+			}
+		}
+		return dist;
+	}
+	
 	public static City findClosestCity(Player p) {
 		ChunkPosition pos = new ChunkPosition(p.getLocation());
 		return findClosestCity(p.getWorld(), pos.x, pos.z);
@@ -154,5 +182,12 @@ public final class CBMain extends JavaPlugin {
 	
 	public static File getDataFolderPath() {
 		return INSTANCE.getDataFolder();
+	}
+	
+	public static City getCityAtChunk(World w, ChunkPosition pos) {
+		for(City c : cities.values()) {
+			if(c.world == w && c.chunks.containsKey(pos.getIndex())) return c;
+		}
+		return null;
 	}
 }

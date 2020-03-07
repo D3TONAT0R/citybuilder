@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 
 import com.d3t.citybuilder.framework.CBMain;
 import com.d3t.citybuilder.framework.ChunkPosition;
-import com.d3t.citybuilder.structures.ConstructionData;
+import com.d3t.citybuilder.structures.Construction;
 import com.d3t.citybuilder.structures.Orientation;
 import com.d3t.citybuilder.structures.Structure;
 import com.d3t.citybuilder.structures.StructureLibrary;
@@ -17,14 +17,20 @@ import com.d3t.citybuilder.zones.ZoneDensity;
 import com.d3t.citybuilder.zones.ZoneType;
 
 public class City {
+	
+	public static final int minChunkDistanceBetweenCities = 4;
 
 	public World world;
 	public String mayorName;
 	public HashMap<Integer, Zone> chunks;
 	public ChunkPosition origin;
-	public ArrayList<ConstructionData> constructions = new ArrayList<ConstructionData>();
+	public ArrayList<Construction> constructions = new ArrayList<Construction>();
 	
 	public String cityName;
+	
+	public CityStatistics stats = new CityStatistics();
+	
+	private int lastCheckedTime = 0;
 	
 	public City(World w, int x, int z) {
 		world = w;
@@ -36,20 +42,8 @@ public class City {
 		chunks = new HashMap<Integer, Zone>();
 		mayorName = owner;
 		cityName = name;
-		addArea(x-2,z-2,x+2,z+2);
-	}
-	
-	public static City loadFromSaveData(World w, int x, int z, String owner, String name, ArrayList<String> zoneStrings) {
-		HashMap<Integer, Zone> zones = new HashMap<Integer, Zone>();
-		City city = new City(w,x,z);
-		city.mayorName = owner;
-		city.cityName = name;
-		city.chunks = zones;
-		for(String s : zoneStrings) {
-			Zone zone = Zone.loadFromSaveData(w, s, city);
-			if(zone != null) zones.put(zone.pos.getIndex(), zone);
-		}
-		return city;
+		addArea(x-4,z-4,x+4,z+4);
+		stats.setStartValues();
 	}
 	
 	public void addArea(int x1, int z1, int x2, int z2) {
@@ -68,7 +62,7 @@ public class City {
 	}
 	
 	public boolean addChunk(int x, int z) {
-		if(chunks.containsKey(CityAreaHandler.chunkPosToIndex(x, z))) {
+		if(chunks.containsKey(CityAreaHandler.chunkPosToIndex(x, z)) || CBMain.getCityAtChunk(world, new ChunkPosition(x, z)) != null) {
 			return false;
 		} else {
 			Zone zone = new Zone(world, x, z, this);
@@ -78,18 +72,25 @@ public class City {
 	}
 	
 	public void update() {
-		ConstructionData toBeRemoved = null;
-		for(ConstructionData c : constructions) {
+		Construction toBeRemoved = null;
+		for(Construction c : constructions) {
 			if(c == null || !c.updateConstruction()) toBeRemoved = c;
 		}
+		if(lastCheckedTime > world.getTime()) {
+			onDayStart();
+		}
 		if(toBeRemoved != null) constructions.remove(toBeRemoved);
+	}
+	
+	private void onDayStart() {
+		stats.ageInDays++;
+		stats.moneyBalance += stats.moneyBalance*0.05f;
 	}
 	
 	public boolean setZone(Player sender, int chunkX, int chunkZ, ZoneType zone, ZoneDensity density) {
 		int index = new ChunkPosition(chunkX, chunkZ).getIndex();
 		if(chunks.containsKey(index)) {
-			chunks.get(index).reZone(zone, density);
-			sender.sendMessage("Zone set to '"+zone.toString()+"'");
+			chunks.get(index).reZone(sender, zone, density);
 			return true;
 		} else {
 			sender.sendMessage("Out of city bounds!");
@@ -105,10 +106,10 @@ public class City {
 				chunks.get(index).build(s, orientation, forceBuild, true, buildInstantly);
 				return true;
 			} else {
-				System.out.println("Can't build '"+structureName+"' here, the structure does not exist");
+				CBMain.log.info("Can't build '"+structureName+"' here, the structure does not exist");
 			}
 		} else {
-			System.out.println("Can't build here, out of bounds!");
+			CBMain.log.info("Can't build here, out of bounds!");
 		}
 		return false;
 	}
@@ -122,7 +123,7 @@ public class City {
 		return neighbors;
 	}
 	
-	public void registerConstruction(ConstructionData cons) {
+	public void registerConstruction(Construction cons) {
 		if(!constructions.contains(cons)) constructions.add(cons);
 	}
 }

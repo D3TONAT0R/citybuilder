@@ -1,30 +1,36 @@
 package com.d3t.citybuilder.io;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.d3t.citybuilder.framework.CBMain;
 
-public class FileReader {
+public class FileUtil {
 
 	public static final String separator = "=";
-
+	
+	public static final String arrayMark = "=>";
+	public static final String arrayIndent = "\t";
+	
 	public HashMap<String, Object> content;
 
-	public FileReader(String[] fileContents) {
+	public FileUtil(String[] fileContents) {
 		//if (fileContents[0].StartsWith("#")) title = fileContents[0].SubString(1); else Debug.LogError("File is not formatted correctly!");
 		content = new HashMap<String, Object>();
 		for(String str : fileContents) str.replace("\r", ""); //Line ending cleanup
 		for(int ln = 0; ln < fileContents.length; ln++) {
 			if(!fileContents[ln].startsWith("#") && fileContents[ln].contains("=")) {
 				//Is the current line an Array?
-				if(fileContents[ln].contains("=>")) {
-					String valName = fileContents[ln].split("=>")[0];
+				if(fileContents[ln].contains(arrayMark)) {
+					String valName = fileContents[ln].split(arrayMark)[0];
 					int length = 0;
 					int i = ln+1;
-					while(fileContents[i].startsWith("\t")) {
+					while(fileContents[i].startsWith(arrayIndent)) {
 						i++;
 						length++;
 					}
@@ -44,8 +50,28 @@ public class FileReader {
 			}
 		}
 	}
+	
+	public static FileUtil createFromFile(File file) {
+		try {
+			FileInputStream stream = new FileInputStream(file);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+			ArrayList<String> lines = new ArrayList<String>();
+			String ln = reader.readLine();
+			while(ln != null) {
+				lines.add(ln);
+				ln = reader.readLine();
+			}
+			reader.close();
+			String[] arr = new String[0];
+			lines.toArray(arr);
+			return new FileUtil(arr);
+		} catch (Exception e) {
+			CBMain.log.severe("Exception encountered while reading file "+file.getPath());
+		}
+		return null;
+	}
 
-	public static FileReader loadSection(String[] fileContents, String section) {
+	public static FileUtil loadSection(String[] fileContents, String section) {
 		ArrayList<String> lines = new ArrayList<String>();
 		boolean b = false;
 		for(int i = 0; i < fileContents.length; i++) {
@@ -54,10 +80,10 @@ public class FileReader {
 		}
 		String[] array = new String[0];
 		lines.toArray(array);
-		return new FileReader(array);
+		return new FileUtil(array);
 	}
 
-	public FileReader() {
+	public FileUtil() {
 		content = new HashMap<String, Object>();
 	}
 

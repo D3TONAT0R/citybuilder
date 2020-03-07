@@ -16,10 +16,8 @@ public class ChunkPosition {
 	
 	public ChunkPosition(int index) {
 		int r = CityAreaHandler.chunkIndexRange;
-		this.z = (int)(Math.floor(index/r*2));
-		this.x = index-r*z*2;
-		this.z -= r;
-		this.x -= r;
+		this.z = (int)(Math.floor(index/r/2))-r;
+		this.x = (index % (r*2))-r;
 	}
 	
 	public ChunkPosition(Location loc) {

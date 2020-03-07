@@ -9,6 +9,6 @@ public class CityAreaHandler {
 		int r = chunkIndexRange;
 		int ix = x+r;
 		int iz = z+r;
-		return ix+r*2*iz;
+		return ix+2*r*iz;
 	}
 }

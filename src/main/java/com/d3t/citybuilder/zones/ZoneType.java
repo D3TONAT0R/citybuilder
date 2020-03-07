@@ -15,5 +15,39 @@ public enum ZoneType {
 	Public,
 	TransportFacilites,
 	Predefined,
-	Special
+	Special;
+	
+	public String toColorString() {
+		if(this == UNZONED) {
+			return "§8§oKeine Zone§f";
+		} else if(this == TRANSPORT) {
+			return "§7Verkehr§f";
+		} else if(this == DO_NOT_BUILD) {
+			return "§4§oBauverbot§f";
+		} else if(this == ADMINISTRATION) {
+			return "§dAdministration§f";
+		} else if(this == Residental) {
+			return "§aWohnen§f";
+		} else if(this == Retail) {
+			return "§9Gewerbe§f";
+		} else if(this == Office) {
+			return "§dBüro§f";
+		} else if(this == Industrial) {
+			return "§eIndustrie§f";
+		} else if(this == Farmland) {
+			return "§eAgrarland§f";
+		} else if(this == Park) {
+			return "§bPark§f";
+		} else if(this == Public) {
+			return "§bÖffentliche Bauten§f";
+		} else if(this == TransportFacilites) {
+			return "§7Transportanlagen§f";
+		} else if(this == Predefined) {
+			return "§3Mischzone§f";
+		} else if(this == Special) {
+			return "§cSonderbauten§f";
+		} else {
+			return this.name();
+		}
+	}
 }

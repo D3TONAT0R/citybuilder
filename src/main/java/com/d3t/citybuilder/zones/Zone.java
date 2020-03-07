@@ -5,11 +5,13 @@ import java.util.Arrays;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 
 import com.d3t.citybuilder.cities.City;
+import com.d3t.citybuilder.framework.CBMain;
 import com.d3t.citybuilder.framework.ChunkPosition;
 import com.d3t.citybuilder.structures.BlockCategories;
-import com.d3t.citybuilder.structures.ConstructionData;
+import com.d3t.citybuilder.structures.Construction;
 import com.d3t.citybuilder.structures.Orientation;
 import com.d3t.citybuilder.structures.Structure;
 import com.d3t.citybuilder.structures.StructureLibrary;
@@ -31,7 +33,7 @@ public class Zone {
 	
 	public int averageTerrainLevel = 64;
 	
-	public ConstructionData building;
+	public Construction building;
 	
 	public Zone(World w, int x, int z, City c) {
 		city = c;
@@ -55,11 +57,19 @@ public class Zone {
 		averageTerrainLevel = avgterrain;
 	}
 	
-	public void reZone(ZoneType zt, ZoneDensity zd) {
+	public boolean reZone(Player sender, ZoneType zt, ZoneDensity zd) {
 		neighborRoadmap = getNeighborRoadmap();
+		if(isBuilt() && zt == ZoneType.TRANSPORT) {
+			sender.sendMessage("§cDas bestehende Gebäude muss zuerst abgebrochen werden!");
+		}
+		if(zoneType == ZoneType.TRANSPORT) {
+			demolish();
+		}
 		zoneType = zt;
 		density = zd;
 		build(null, Orientation.SOUTH, false, true, false);
+		sender.sendMessage(String.format("Zone auf '%s' gestellt.", zt.toColorString()));
+		return true;
 	}
 	
 	public ZoneDensity getDensity() {
@@ -98,14 +108,17 @@ public class Zone {
 			if(s == null) {
 				makeOutline();
 			} else {
-				s.startBuild(this, orientation);
+				if(buildInstantly) {
+					s.buildNow(this, orientation);
+				} else {
+					s.startBuild(this, orientation);
+				}
 			}
 		} else {
 			if(s == null) {
 				buildRoad();
 			} else {
-				s.startBuild(this, Orientation.NONE);
-				building = new ConstructionData(this, s, Orientation.NONE, true);
+				s.buildNow(this, Orientation.NONE);
 			}
 		}
 		if(updateNeighbors) {
@@ -124,8 +137,12 @@ public class Zone {
 		if(collection != null) {
 			build(collection.getStructureForChunk(conn), Orientation.NONE, true, false, true);
 		} else {
-			System.out.println("collection road1 does not exist!");
+			CBMain.log.info("collection road1 does not exist!");
 		}
+	}
+	
+	public void demolish() {
+		
 	}
 	
 	private void onNeighborUpdate(int updateFromX, int updateFromZ) {
@@ -135,7 +152,7 @@ public class Zone {
 			neighborRoadmap = newNRM;
 			buildRoad();
 			/*} else {
-				System.out.println("not hoi");
+				CBMain.log.info("not hoi");
 			}*/
 		}
 	}
@@ -162,12 +179,12 @@ public class Zone {
 			int xp = pos.getBlockX()+15;
 			int zn = pos.getBlockZ();
 			int zp = pos.getBlockZ()+15;
-			world.getBlockAt(xn+i, world.getHighestBlockYAt(xn+i, zn)-1, zn).setType(m);
-			world.getBlockAt(xn+i, world.getHighestBlockYAt(xn+i, zp)-1, zp).setType(m);
-			world.getBlockAt(xn, world.getHighestBlockYAt(xn, zn+i)-1, zn+i).setType(m);
-			world.getBlockAt(xp, world.getHighestBlockYAt(xp, zn+i)-1, zn+i).setType(m);
+			world.getBlockAt(xn+i, world.getHighestBlockYAt(xn+i, zn), zn).setType(m);
+			world.getBlockAt(xn+i, world.getHighestBlockYAt(xn+i, zp), zp).setType(m);
+			world.getBlockAt(xn, world.getHighestBlockYAt(xn, zn+i), zn+i).setType(m);
+			world.getBlockAt(xp, world.getHighestBlockYAt(xp, zn+i), zn+i).setType(m);
 		}
-		System.out.println("outline built!");
+		CBMain.log.info("outline built!");
 	}
 	
 	public Block getBlock(int x, int y, int z) {
@@ -272,12 +289,11 @@ public class Zone {
 			byte extradata = Byte.parseByte(split[2]);
 			int averageterrain = Integer.parseInt(split[3]);
 			Zone zone = new Zone(c, w, pos, zonetype, zonedensity, heightlimit, extradata, averageterrain);
-			if(!split[4].equalsIgnoreCase("null")) zone.building = ConstructionData.loadFromSaveString(zone, split[4]);
+			if(!split[4].equalsIgnoreCase("null")) zone.building = Construction.loadFromSaveString(zone, split[4]);
 			return zone;
 		}
 		catch(Exception e) {
-			System.out.println("Failed to load Zone from save data:");
-			System.out.println(fulldata);
+			CBMain.log.info("Failed to load Zone from save data: "+fulldata);
 			e.printStackTrace();
 			return null;
 		}

@@ -1,5 +1,5 @@
 name: CityBuilder
-main: com.d3t.citybuilder.CBMain
+main: com.d3t.citybuilder.framework.CBMain
 version: 0.0.3
 api-version: 1.15
 softdepend: [Vault, ActionBarAPI]
@@ -51,6 +51,11 @@ commands:
       permission: citybuilder.templatecommand
       permission-message: You don't have permission to use this command
    loadcities:
+      description: ...
+      usage: /<templatecommand>
+      permission: citybuilder.templatecommand
+      permission-message: You don't have permission to use this command
+   zoneinfo:
       description: ...
       usage: /<templatecommand>
       permission: citybuilder.templatecommand

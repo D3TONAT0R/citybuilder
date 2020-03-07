@@ -1,6 +1,9 @@
 package com.d3t.citybuilder.framework;
 
+import org.bukkit.entity.Player;
+
 import com.d3t.citybuilder.cities.City;
+import com.d3t.citybuilder.userinteractive.GUIHandler;
 
 public class PluginLoop implements Runnable {
 
@@ -18,6 +21,7 @@ public class PluginLoop implements Runnable {
 
 	private void onTickUpdate() {
 		for(City c : CBMain.cities.values()) c.update();
+		for(Player p : CBMain.getServerInstance().getOnlinePlayers()) GUIHandler.update(p);
 	}
 	
 	private void onSecondUpdate() {

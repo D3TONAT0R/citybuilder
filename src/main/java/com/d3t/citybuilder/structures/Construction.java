@@ -5,10 +5,11 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.util.Vector;
 
+import com.d3t.citybuilder.framework.CBMain;
 import com.d3t.citybuilder.framework.ChunkPosition;
 import com.d3t.citybuilder.zones.Zone;
 
-public class ConstructionData {
+public class Construction {
 	
 	public static final int maxProgressIterations = 256;
 	
@@ -23,16 +24,24 @@ public class ConstructionData {
 	public float constructionProgress = 1f;
 	public int constructionBlockProgress = -1;
 	
-	public ConstructionData(Zone z, Structure structure, Orientation orient, boolean buildInstantly) {
+	public Construction(Zone z, Structure structure, Orientation orient, BuildTask task) {
 		zone = z;
 		this.structure = structure;
 		orientation = orient;
 		constructionBlockProgress = 0;
-		if(buildInstantly) constructAll();
+		if(task == BuildTask.NORMAL) {
+			z.city.registerConstruction(this);
+		} else if(task == BuildTask.INSTANT) {
+			constructAll();
+		}
 	}
 	
 	public String getSaveString() {
-		return structure.structureName+"@"+orientation;
+		String s =  structure.structureName+"@"+orientation;
+		if(constructionStage != ConstructionStage.DONE) {
+			s += "@"+constructionStage.name()+":"+constructionBlockProgress;
+		}
+		return s;
 	}
 	
 	public boolean updateConstruction() {
@@ -42,14 +51,22 @@ public class ConstructionData {
 	}
 	
 	private void onFinishConstruction() {
-		System.out.println("CONSTRUCTION DONE!");
+		CBMain.log.info("CONSTRUCTION DONE!");
 	}
 	
-	public static ConstructionData loadFromSaveString(Zone z, String data) {
+	public static Construction loadFromSaveString(Zone z, String data) {
 		String[] dataSplit = data.split("@");
-		int progress = Integer.parseInt(dataSplit[1]);
-		ConstructionData cdata = new ConstructionData(z, StructureLibrary.allStructures.get(dataSplit[0]), Orientation.valueOf(dataSplit[1]), progress >= 1);
-		cdata.constructionBlockProgress = progress; 
+		Construction cdata = new Construction(z, StructureLibrary.allStructures.get(dataSplit[0]), Orientation.valueOf(dataSplit[1]), BuildTask.NOTHING);
+		if(dataSplit.length > 2) {
+			String[] constructionSplit = dataSplit[2].split(":");
+			ConstructionStage stage = ConstructionStage.valueOf(constructionSplit[0]);
+			int progress = Integer.parseInt(constructionSplit[1]);
+			cdata.constructionStage = stage;
+			cdata.constructionBlockProgress = progress;
+			z.city.registerConstruction(cdata);
+		} else {
+			cdata.constructionStage = ConstructionStage.DONE;
+		}
 		return cdata;
 	}
 	
@@ -68,7 +85,7 @@ public class ConstructionData {
 				}
 				b = processBlockForStage(zone, vec.getBlockX(), vec.getBlockY(), vec.getBlockZ(), data);
 			}
-			if(vec != null) System.out.println(String.format("Block %s/%s, x%s y%s z%s, stage: %s", constructionBlockProgress, structure.getStructureVolume(), vec.getBlockX(), vec.getBlockY(), vec.getBlockZ(), constructionStage));
+			//if(vec != null) CBMain.log.info(String.format("Block %s/%s, x%s y%s z%s, stage: %s", constructionBlockProgress, structure.getStructureVolume(), vec.getBlockX(), vec.getBlockY(), vec.getBlockZ(), constructionStage));
 		}
 	}
 	
@@ -117,7 +134,7 @@ public class ConstructionData {
 		Vector loc = getConstructingBlockLocation();
 		if(loc == null) {
 			constructionStage = constructionStage.getNextStage(constructionStage);
-			System.out.println("Construction works advanced to stage "+constructionStage.toString());
+			CBMain.log.info("Construction works advanced to stage "+constructionStage.toString());
 			constructionBlockProgress = 0;
 			loc = getConstructingBlockLocation();
 		}

@@ -6,11 +6,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.d3t.citybuilder.cities.City;
-import com.d3t.citybuilder.io.SaveHandler;
+import com.d3t.citybuilder.io.CitySaveUtil;
+import com.d3t.citybuilder.io.StructureSaveUtil;
 import com.d3t.citybuilder.structures.Orientation;
 import com.d3t.citybuilder.structures.Structure;
 import com.d3t.citybuilder.structures.StructureFactory;
 import com.d3t.citybuilder.structures.StructureLibrary;
+import com.d3t.citybuilder.zones.Zone;
 
 public class Commands {
 
@@ -29,9 +31,8 @@ public class Commands {
 		if (p == null) return false;
 		if (c.equalsIgnoreCase("foundcity")) {
 			if (args.length > 0) {
-				CBMain.createCity(args[0], p.getName(), p.getWorld(), p.getLocation().getBlockX() / 16,
+				CBMain.createCity(p, args[0], p.getWorld(), p.getLocation().getBlockX() / 16,
 						p.getLocation().getBlockZ() / 16);
-				p.sendMessage("NEW CITY: " + args[0]);
 				return true;
 			}
 		} else if (c.equalsIgnoreCase("updatecity")) {
@@ -66,9 +67,9 @@ public class Commands {
 				return true;
 			}
 		} else if (c.equalsIgnoreCase("reloadstructurefiles")) {
-			StructureLibrary.loadSavedStructures();
-			int success = StructureLibrary.successfullyLoadedFiles;
-			int fail = StructureLibrary.failedToLoadFiles;
+			StructureSaveUtil.loadSavedStructures();
+			int success = StructureSaveUtil.successfullyLoadedFiles;
+			int fail = StructureSaveUtil.failedToLoadFiles;
 			if(success > 0) {
 				p.sendMessage("§aLoaded "+success+" structures");
 			}
@@ -95,27 +96,44 @@ public class Commands {
 				return true;
 			}
 		} else if (c.equalsIgnoreCase("savecities")) {
-			SaveHandler.saveCities();
-			if(SaveHandler.successfullySavedCities > 0) {
-				p.sendMessage("§aSaved "+SaveHandler.successfullySavedCities+" cities");
+			CitySaveUtil.saveCities();
+			if(CitySaveUtil.successfullySavedCities > 0) {
+				p.sendMessage("§aSaved "+CitySaveUtil.successfullySavedCities+" cities");
 			}
-			if(SaveHandler.failedToSaveCities > 0) {
-				p.sendMessage("§c"+SaveHandler.failedToSaveCities+" cities failed to save");
+			if(CitySaveUtil.failedToSaveCities > 0) {
+				p.sendMessage("§c"+CitySaveUtil.failedToSaveCities+" cities failed to save");
 			}
-			if(SaveHandler.successfullySavedCities == 0 && SaveHandler.failedToSaveCities == 0) {
+			if(CitySaveUtil.successfullySavedCities == 0 && CitySaveUtil.failedToSaveCities == 0) {
 				p.sendMessage("§6Warning: No cities were saved!");
 			}
 			return true;
 		} else if (c.equalsIgnoreCase("loadcities")) {
-			SaveHandler.loadCities();
-			if(SaveHandler.successfullyLoadedCities > 0) {
-				p.sendMessage("§aLoaded "+SaveHandler.successfullyLoadedCities+" cities");
+			CitySaveUtil.loadCities();
+			if(CitySaveUtil.successfullyLoadedCities > 0) {
+				p.sendMessage("§aLoaded "+CitySaveUtil.successfullyLoadedCities+" cities");
 			}
-			if(SaveHandler.failedToSaveCities > 0) {
-				p.sendMessage("§c"+SaveHandler.failedToLoadCities+" cities failed to load");
+			if(CitySaveUtil.failedToSaveCities > 0) {
+				p.sendMessage("§c"+CitySaveUtil.failedToLoadCities+" cities failed to load");
 			}
-			if(SaveHandler.successfullyLoadedCities == 0 && SaveHandler.failedToLoadCities == 0) {
+			if(CitySaveUtil.successfullyLoadedCities == 0 && CitySaveUtil.failedToLoadCities == 0) {
 				p.sendMessage("§6Warning: No cities were loaded!");
+			}
+			return true;
+		} else if(c.equalsIgnoreCase("zoneinfo")) {
+			sender.sendMessage("----------------");
+			ChunkPosition cp = new ChunkPosition(p.getLocation());
+			sender.sendMessage("Chunk #"+cp.getIndex());
+			for(City city : CBMain.cities.values()) {
+				if(city.world == p.getWorld()) {
+					Zone z = city.chunks.get(cp.getIndex());
+					if(z != null) {
+						sender.sendMessage("---");
+						sender.sendMessage("§6Zone in "+city.cityName);
+						sender.sendMessage(String.format("POS: x%s y%s, index %s", cp.x, cp.z, cp.getIndex()));
+						sender.sendMessage(String.format("Zone: %s @ %s", z.zoneType, z.getDensity()));
+						sender.sendMessage(String.format("Building: %s", z.building != null ? z.building.getSaveString() : "none"));
+					}
+				}
 			}
 			return true;
 		}
