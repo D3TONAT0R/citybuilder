@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import com.d3t.citybuilder.framework.CBMain;
 
@@ -17,11 +18,11 @@ public class FileUtil {
 	public static final String arrayMark = "=>";
 	public static final String arrayIndent = "\t";
 	
-	public HashMap<String, Object> content;
+	public LinkedHashMap<String, Object> content;
 
 	public FileUtil(String[] fileContents) {
 		//if (fileContents[0].StartsWith("#")) title = fileContents[0].SubString(1); else Debug.LogError("File is not formatted correctly!");
-		content = new HashMap<String, Object>();
+		content = new LinkedHashMap<String, Object>();
 		for(String str : fileContents) str.replace("\r", ""); //Line ending cleanup
 		for(int ln = 0; ln < fileContents.length; ln++) {
 			if(!fileContents[ln].startsWith("#") && fileContents[ln].contains("=")) {
@@ -84,10 +85,10 @@ public class FileUtil {
 	}
 
 	public FileUtil() {
-		content = new HashMap<String, Object>();
+		content = new LinkedHashMap<String, Object>();
 	}
 
-	public void Save(String path, String fileName) {
+	public boolean Save(String path, String fileName) {
 		String t = ""; //"#" + title + "\n";
 		ArrayList<String> keys = new ArrayList<String>(content.keySet());
 		ArrayList<Object> values = new ArrayList<Object>(content.values());
@@ -108,15 +109,17 @@ public class FileUtil {
 	    	file.getParentFile().mkdirs();
 	    }
 	    try {
-	    	FileOutputStream stream = new FileOutputStream(p);
+	    	FileOutputStream stream = new FileOutputStream(file);
 	    	stream.write(t.getBytes());
 	    	stream.close();
 	    	System.out.println("Saved to " + p);
+	    	return true;
 	    }
 	    catch(Exception e) {
 	    	System.out.println("Error encountered while trying to write to file " + p);
 	    	e.printStackTrace();
 	    }
+	    return false;
 	}
 
 	public boolean ContainsField(String field) {
@@ -125,6 +128,12 @@ public class FileUtil {
 
 	public void SetValue(String name, Object value) {
 		content.put(name, value);
+	}
+	
+	public void SetArrayList(String name, ArrayList<String> value) {
+		String[] array = new String[0];
+		value.toArray(array);
+		content.put(name, array);
 	}
 
 	public boolean GetBool(String name) {

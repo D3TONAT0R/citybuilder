@@ -1,12 +1,14 @@
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\userinteractive\GUIHandler.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\userinteractive\ItemClickEvents.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\zones\ZoneType.java
+C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\io\CitySaveUtil.java
+C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\io\StructureSaveUtil.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\zones\ZoneDensity.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\io\FileReader.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\zones\RealEstateData.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\userinteractive\ClickEventHandler.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\StructureLibrary.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\cities\CityAreaHandler.java
+C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\io\FileUtil.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\ConstructionStage.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\Orientation.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\BuildTask.java
@@ -22,4 +24,5 @@ C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\str
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\BlockCategories.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\TrafficStructurePieces.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\zones\Zone.java
+C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\cities\CityStatistics.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\framework\Commands.java

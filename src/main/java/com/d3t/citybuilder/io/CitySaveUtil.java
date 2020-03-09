@@ -1,11 +1,6 @@
 package com.d3t.citybuilder.io;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.MalformedInputException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -47,25 +42,21 @@ public class CitySaveUtil {
 	    	file.getParentFile().mkdirs();
 	    }
 	    try {
-	    	byte[] version = (1+"\n").getBytes();
-	    	byte[] cityname = (c.cityName+"\n").getBytes();
-	    	byte[] mayorname = (c.mayorName+"\n").getBytes();
-	    	byte[] worldname = (c.world.getName()+"\n").getBytes();
-	    	byte[] origin = (c.origin.getIndex()+"\n").getBytes();
-	    	FileOutputStream stream = new FileOutputStream(file);
-	    	stream.write(version);
-	    	stream.write(cityname);
-	    	stream.write(mayorname);
-	    	stream.write(worldname);
-	    	stream.write(origin);
-	    	stream.write((zoneDataSaveMark+"\n").getBytes());
+	    	FileUtil futil = new FileUtil();
+	    	futil.SetValue("version", 1);
+	    	futil.SetValue("cityname", c.cityName);
+	    	futil.SetValue("mayorname", c.mayorName);
+	    	futil.SetValue("world", c.world.getName());
+	    	futil.SetValue("origin", c.origin.getIndex());
+	    	ArrayList<String> zones = new ArrayList<String>();
 	    	for(int zonekey : c.chunks.keySet()) {
 	    		Zone zone = c.chunks.get(zonekey);
 	    		if(zone != null) {
-	    			stream.write((zonekey+" "+zone.getSaveString()+"\n").getBytes());
+	    			zones.add(zonekey+" "+zone.getSaveString());
 	    		}
 	    	}
-	    	stream.close();
+	    	futil.SetArrayList("zones", zones);
+	    	futil.Save("cities", c.cityName+fileExtension);
 	    	System.out.println("City saved: "+file.getAbsolutePath());
 	    	return true;
 	    }
@@ -103,14 +94,12 @@ public class CitySaveUtil {
 			return false;
 		}
 		try {
-			FileInputStream stream = new FileInputStream(file);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(stream)); 
-			int version = Integer.parseInt(reader.readLine());
+			FileUtil reader = FileUtil.createFromFile(file);
+			int version = reader.GetInt("version");
 			if(version == 1) {
 				return readFileVersion1(reader, file);
 			} else {
 				System.out.println("Unknown file version: "+version);
-				reader.close();
 				return false;
 			}
 		}
@@ -121,27 +110,15 @@ public class CitySaveUtil {
 		}
 	}
 	
-	private static boolean readFileVersion1(BufferedReader reader, File file) {
+	private static boolean readFileVersion1(FileUtil reader, File file) {
 		try {
-			String cityname = reader.readLine();
-			String mayorname = reader.readLine();
-			String worldname = reader.readLine();
-			String originStr = reader.readLine();
-			if(!reader.readLine().equals(zoneDataSaveMark)) throw new MalformedInputException(0);
-			ArrayList<String> zoneStrings = new ArrayList<String>();
-			boolean done = false;
-			while(!done) {
-				reader.mark(1000);
-				String s = reader.readLine();
-				if(s == null || s.startsWith("#")) {
-					done = true;
-					if(s != null && s.startsWith("#")) reader.reset();
-					break;
-				}
-				zoneStrings.add(s);
-			}
+			String cityname = reader.GetString("cityname");
+			String mayorname = reader.GetString("mayorname");
+			String worldname = reader.GetString("world");
+			int origin = reader.GetInt("origin");
+			String[] zoneStrings = reader.GetArray("zones");
 			World world = CBMain.INSTANCE.getServer().getWorld(worldname);
-			ChunkPosition pos = new ChunkPosition(Integer.parseInt(originStr));
+			ChunkPosition pos = new ChunkPosition(origin);
 			City c = loadFromSaveData(world, pos.x, pos.z, mayorname, cityname, zoneStrings);
 			CBMain.cities.put(cityname, c);
 			return true;
@@ -153,7 +130,7 @@ public class CitySaveUtil {
 		}
 	}
 	
-	public static City loadFromSaveData(World w, int x, int z, String owner, String name, ArrayList<String> zoneStrings) {
+	public static City loadFromSaveData(World w, int x, int z, String owner, String name, String[] zoneStrings) {
 		HashMap<Integer, Zone> zones = new HashMap<Integer, Zone>();
 		City city = new City(w,x,z);
 		city.mayorName = owner;

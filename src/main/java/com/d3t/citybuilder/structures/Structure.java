@@ -20,7 +20,7 @@ public class Structure {
 	public TileState[][][] blockTiles = new TileState[16][32][16];
 	public int sizeX = 1;
 	public int sizeZ = 1;
-	public int lawfulHeight = 0;
+	public int legalHeight = 0;
 	public RealEstateData[] realEstateData;
 
 	public Structure() {
@@ -28,7 +28,7 @@ public class Structure {
 	}
 
 	public Structure(BlockData[][][] blocks, TileState[][][] tileStates, String name, String cat, String creatorName,
-			int chunksX, int chunksZ, int lawfulHeight, RealEstateData[] realEstate) {
+			int chunksX, int chunksZ, int legalHeight, RealEstateData[] realEstate) {
 		this();
 		structureName = name;
 		category = cat;
@@ -37,7 +37,7 @@ public class Structure {
 		this.blockTiles = tileStates;
 		this.sizeX = chunksX;
 		this.sizeZ = chunksZ;
-		this.lawfulHeight = lawfulHeight;
+		this.legalHeight = legalHeight;
 		this.realEstateData = realEstate;
 	}
 
