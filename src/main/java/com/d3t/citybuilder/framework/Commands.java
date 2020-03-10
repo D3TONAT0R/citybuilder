@@ -28,6 +28,31 @@ public class Commands {
 		if (sender instanceof Player) {
 			p = (Player) sender;
 		}
+		if (c.equalsIgnoreCase("savecities")) {
+			CitySaveUtil.saveCities();
+			if(CitySaveUtil.successfullySavedCities > 0) {
+				p.sendMessage("§aSaved "+CitySaveUtil.successfullySavedCities+" cities");
+			}
+			if(CitySaveUtil.failedToSaveCities > 0) {
+				p.sendMessage("§c"+CitySaveUtil.failedToSaveCities+" cities failed to save");
+			}
+			if(CitySaveUtil.successfullySavedCities == 0 && CitySaveUtil.failedToSaveCities == 0) {
+				p.sendMessage("§6Warning: No cities were saved!");
+			}
+			return true;
+		} else if (c.equalsIgnoreCase("loadcities")) {
+			CitySaveUtil.loadCities();
+			if(CitySaveUtil.successfullyLoadedCities > 0) {
+				p.sendMessage("§aLoaded "+CitySaveUtil.successfullyLoadedCities+" cities");
+			}
+			if(CitySaveUtil.failedToSaveCities > 0) {
+				p.sendMessage("§c"+CitySaveUtil.failedToLoadCities+" cities failed to load");
+			}
+			if(CitySaveUtil.successfullyLoadedCities == 0 && CitySaveUtil.failedToLoadCities == 0) {
+				p.sendMessage("§6Warning: No cities were loaded!");
+			}
+			return true;
+		}
 		if (p == null) return false;
 		if (c.equalsIgnoreCase("foundcity")) {
 			if (args.length > 0) {
@@ -95,30 +120,6 @@ public class Commands {
 				}
 				return true;
 			}
-		} else if (c.equalsIgnoreCase("savecities")) {
-			CitySaveUtil.saveCities();
-			if(CitySaveUtil.successfullySavedCities > 0) {
-				p.sendMessage("§aSaved "+CitySaveUtil.successfullySavedCities+" cities");
-			}
-			if(CitySaveUtil.failedToSaveCities > 0) {
-				p.sendMessage("§c"+CitySaveUtil.failedToSaveCities+" cities failed to save");
-			}
-			if(CitySaveUtil.successfullySavedCities == 0 && CitySaveUtil.failedToSaveCities == 0) {
-				p.sendMessage("§6Warning: No cities were saved!");
-			}
-			return true;
-		} else if (c.equalsIgnoreCase("loadcities")) {
-			CitySaveUtil.loadCities();
-			if(CitySaveUtil.successfullyLoadedCities > 0) {
-				p.sendMessage("§aLoaded "+CitySaveUtil.successfullyLoadedCities+" cities");
-			}
-			if(CitySaveUtil.failedToSaveCities > 0) {
-				p.sendMessage("§c"+CitySaveUtil.failedToLoadCities+" cities failed to load");
-			}
-			if(CitySaveUtil.successfullyLoadedCities == 0 && CitySaveUtil.failedToLoadCities == 0) {
-				p.sendMessage("§6Warning: No cities were loaded!");
-			}
-			return true;
 		} else if(c.equalsIgnoreCase("zoneinfo")) {
 			sender.sendMessage("----------------");
 			ChunkPosition cp = new ChunkPosition(p.getLocation());

@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import com.d3t.citybuilder.framework.CBMain;
@@ -25,13 +24,13 @@ public class FileUtil {
 		content = new LinkedHashMap<String, Object>();
 		for(String str : fileContents) str.replace("\r", ""); //Line ending cleanup
 		for(int ln = 0; ln < fileContents.length; ln++) {
-			if(!fileContents[ln].startsWith("#") && fileContents[ln].contains("=")) {
+			if(!fileContents[ln].startsWith("#") && fileContents[ln].contains(separator)) {
 				//Is the current line an Array?
 				if(fileContents[ln].contains(arrayMark)) {
 					String valName = fileContents[ln].split(arrayMark)[0];
 					int length = 0;
 					int i = ln+1;
-					while(fileContents[i].startsWith(arrayIndent)) {
+					while(i < fileContents.length && fileContents[i].startsWith(arrayIndent)) {
 						i++;
 						length++;
 					}
@@ -44,7 +43,7 @@ public class FileUtil {
 					String[] s = fileContents[ln].split(separator);
 					if(s.length > 1) {
 						String val = s[1];
-						if(s.length > 2) for (int i = 2; i < s.length; i++) val += "="+s[i];
+						if(s.length > 2) for (int i = 2; i < s.length; i++) val += separator+s[i];
 						content.put(s[0], val);
 					}
 				}
@@ -63,11 +62,12 @@ public class FileUtil {
 				ln = reader.readLine();
 			}
 			reader.close();
-			String[] arr = new String[0];
+			String[] arr = new String[lines.size()];
 			lines.toArray(arr);
 			return new FileUtil(arr);
 		} catch (Exception e) {
 			CBMain.log.severe("Exception encountered while reading file "+file.getPath());
+			e.printStackTrace();
 		}
 		return null;
 	}
@@ -96,10 +96,11 @@ public class FileUtil {
 			if(values.get(i) instanceof String[]) {
 				t += keys.get(i) + "=>\n";
 				for(int j = 0; j < ((String[])values.get(i)).length; j++) {
-					t += "\t"+((String[])values.get(i))[j]+"\n";
+					String item = ((String[])values.get(i))[j];
+					t += "\t"+item+"\n";
 				}
 			} else {
-				t += keys.get(i) + ":" + values.get(i).toString();
+				t += keys.get(i) + separator + values.get(i).toString();
 				t += "\n";
 			}
 		}
@@ -131,7 +132,7 @@ public class FileUtil {
 	}
 	
 	public void SetArrayList(String name, ArrayList<String> value) {
-		String[] array = new String[0];
+		String[] array = new String[value.size()];
 		value.toArray(array);
 		content.put(name, array);
 	}
