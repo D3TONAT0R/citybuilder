@@ -27,8 +27,9 @@ public class ClickEventHandler implements Listener {
 			if (item.getItemMeta().hasCustomModelData()) {
 				int id = item.getItemMeta().getCustomModelData();
 				int em = CBMain.getEditModeForPlayer(event.getPlayer());
-				City closestCity = CBMain.findClosestCity(p.getWorld(), p.getLocation().getBlockX() / 16, p.getLocation().getBlockZ() / 16);
-				if (id == ItemClickEvents.OPEN_EDITOR.getOrdinal() && em == 0) {
+				City closestCity = CBMain.getCityAtChunk(p.getWorld(), new ChunkPosition(p.getLocation()));
+				if(closestCity == null) closestCity = CBMain.findClosestCity(p.getWorld(), p.getLocation().getBlockX() / 16, p.getLocation().getBlockZ() / 16);
+				if (id == ItemClickEvents.OPEN_EDITOR.getOrdinal()) {
 					CBMain.setEditModeForPlayer(p, 1, closestCity, null);
 					if (closestCity != null) {
 						p.sendMessage("Entered editor for city " + closestCity.cityName);

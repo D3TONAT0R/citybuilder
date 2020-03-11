@@ -11,52 +11,47 @@ permissions:
 
 commands:
    foundcity:
-      description: ...
-      usage: /<templatecommand> [...]
-      permission: citybuilder.templatecommand
-      permission-message: You don't have permission to use this command
-   updatecity:
-      description: ...
-      usage: /<templatecommand> [...]
-      permission: citybuilder.templatecommand
-      permission-message: You don't have permission to use this command
+      description: Founds a new city at your position
+      usage: /<foundcity> <name>
+      permission: citybuilder.city.create
+      permission-message: You don't have permission to found a city!
    opencityeditor:
       description: ...
       usage: /<templatecommand> [...]
-      permission: citybuilder.templatecommand
+      permission: citybuilder.city.edit
       permission-message: You don't have permission to use this command
    createstructure:
-      description: ...
-      usage: /<templatecommand> [...]
-      permission: citybuilder.templatecommand
+      description: Begins creation of a structure file for use in cities
+      usage: /<createstructure> <name> [category] [parameter]
+      permission: citybuilder.structures.create
       permission-message: You don't have permission to use this command
    buildstructure:
-      description: ...
-      usage: /<templatecommand> [...]
-      permission: citybuilder.templatecommand
+      description: Starts construction of a building in the current zone
+      usage: /<buildstructure> <name> [heading]
+      permission: citybuilder.city.edit
       permission-message: You don't have permission to use this command
    reloadstructurefiles:
-      description: ...
-      usage: /<templatecommand>
-      permission: citybuilder.templatecommand
+      description: Reloads all structures from the file system
+      usage: /<reloadstructurefiles>
+      permission: citybuilder.structures.reload
       permission-message: You don't have permission to use this command
    verifystructure:
-      description: ...
-      usage: /<templatecommand>
-      permission: citybuilder.templatecommand
+      description: Verifies the integrity of a structure file
+      usage: /<verifystructure>
+      permission: citybuilder.structures.verify
       permission-message: You don't have permission to use this command
    savecities:
-      description: ...
-      usage: /<templatecommand>
-      permission: citybuilder.templatecommand
+      description: Saves the current state of all cities on the server
+      usage: /<savecities>
+      permission: citybuilder.city.save
       permission-message: You don't have permission to use this command
    loadcities:
-      description: ...
-      usage: /<templatecommand>
-      permission: citybuilder.templatecommand
+      description: Reloads all cities from the file system
+      usage: /<loadcities>
+      permission: citybuilder.city.load
       permission-message: You don't have permission to use this command
    zoneinfo:
-      description: ...
-      usage: /<templatecommand>
-      permission: citybuilder.templatecommand
+      description: Shows debug information for zones
+      usage: /<zoneinfo>
+      permission: citybuilder.city.info
       permission-message: You don't have permission to use this command

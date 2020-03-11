@@ -60,13 +60,8 @@ public class Commands {
 						p.getLocation().getBlockZ() / 16);
 				return true;
 			}
-		} else if (c.equalsIgnoreCase("updatecity")) {
-			CBMain.updateCities();
-			p.sendMessage("Update done!");
-			return true;
 		} else if (c.equalsIgnoreCase("opencityeditor")) {
 			CBMain.openEditorForPlayer((Player) sender);
-			p.sendMessage("Here you go!");
 			return true;
 		} else if (c.equalsIgnoreCase("createstructure")) {
 			if(args.length > 0) {

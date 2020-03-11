@@ -20,7 +20,7 @@ public class PluginLoop implements Runnable {
 	}
 
 	private void onTickUpdate() {
-		for(City c : CBMain.cities.values()) c.update();
+		CBMain.updateCities();
 		for(Player p : CBMain.getServerInstance().getOnlinePlayers()) GUIHandler.update(p);
 	}
 	

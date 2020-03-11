@@ -3,6 +3,7 @@ package com.d3t.citybuilder.userinteractive;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class HotbarHandler {
@@ -41,6 +42,12 @@ public class HotbarHandler {
 			items = otherZoneItems;
 		}
 		for (int i = 0; i < items.length; i++) {
+			if(isSignificantItem(p.getInventory().getItem(i))) {
+				if(!transferSlotToInventory(p.getInventory(), i)) {
+					p.getWorld().dropItem(p.getLocation(), p.getInventory().getItem(i));
+					p.sendMessage("§cYour "+p.getInventory().getItem(i).getType().toString()+" was dropped!");
+				}
+			}
 			if (items[i] <= 0) {
 				p.getInventory().setItem(i, new ItemStack(Material.AIR));
 			} else {
@@ -53,6 +60,29 @@ public class HotbarHandler {
 			}
 		}
 		p.getInventory().setHeldItemSlot(0);
+	}
+	
+	public static boolean isSignificantItem(ItemStack stack) {
+		if(stack == null) return false;
+		Material mat = stack.getType();
+		if(mat == Material.FILLED_MAP || mat == Material.WRITABLE_BOOK || mat == Material.WRITTEN_BOOK) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public static boolean transferSlotToInventory(PlayerInventory inv, int slotNum) {
+		if(slotNum >= 9) return false;
+		ItemStack stack = inv.getItem(slotNum);
+		for(int i = 9; i < 36; i++) {
+			if(inv.getItem(i) == null) {
+				inv.setItem(slotNum, new ItemStack(Material.AIR));
+				inv.setItem(i, stack);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public static String getItemNames(int data) {
