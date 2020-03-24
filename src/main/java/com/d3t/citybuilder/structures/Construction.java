@@ -3,10 +3,11 @@ package com.d3t.citybuilder.structures;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.Sign;
 import org.bukkit.util.Vector;
 
 import com.d3t.citybuilder.framework.CBMain;
-import com.d3t.citybuilder.framework.ChunkPosition;
+import com.d3t.citybuilder.io.StructureSaveUtil;
 import com.d3t.citybuilder.zones.Zone;
 
 public class Construction {
@@ -51,7 +52,16 @@ public class Construction {
 	}
 	
 	private void onFinishConstruction() {
+		updateConnectionsToRoad();
 		CBMain.log.info("CONSTRUCTION DONE!");
+	}
+	
+	public void updateConnectionsToRoad() {
+		for(int i = 0; i < 16; i++) {
+			if(structure.frontline[i] == StructureFrontline.MAIN_PATH || structure.frontline[i] == StructureFrontline.SECONDARY_PATH) {
+				joinPath(i);
+			}
+		}
 	}
 	
 	public static Construction loadFromSaveString(Zone z, String data) {
@@ -95,11 +105,12 @@ public class Construction {
 				for(int x = 0; x < structure.sizeX*16; x++) {
 					Block source = zone.world.getBlockAt(zone.pos.getBlockX() + x, zone.averageTerrainLevel - StructureFactory.undergroundLayers + y, zone.pos.getBlockZ() + z);
 					setAir(source);
-					setBlockAt(source,structure.getBlockForOrientation(x,y,z,orientation));
+					setBlockAt(source, structure.getBlockForOrientation(x,y,z,orientation), structure.blockTiles[x][y][z]);
 				}
 			}
 		}
 		constructionStage = ConstructionStage.DONE;
+		onFinishConstruction();
 	}
 	
 	public Vector getConstructingBlockLocation() {
@@ -146,12 +157,8 @@ public class Construction {
 	}
 	
 	private boolean processBlockForStage(Zone zone, int x, int y, int z, BlockData target) {
-		int underground = StructureFactory.undergroundLayers;
-		ChunkPosition chunk = zone.pos;
-		int worldX = chunk.getBlockX() + x;
-		int worldY = zone.averageTerrainLevel - underground + y;
-		int worldZ = chunk.getBlockZ() + z;
-		Block source = zone.world.getBlockAt(worldX, worldY, worldZ);
+		Block source = getBlockAt(x,y,z);
+		int worldY = zone.averageTerrainLevel - StructureFactory.undergroundLayers + y;
 		if(source == null) return false;
 		if(constructionStage == ConstructionStage.DEMOLITION) {
 			//Remove everything above ground
@@ -166,24 +173,69 @@ public class Construction {
 		} else if(constructionStage == ConstructionStage.BASE_CONSTRUCTION) {
 			//Place substitute blocks during base construction stage
 			if(BlockCategories.isBaseConstructionBlock(target.getMaterial())) {
-				return setBlockAt(source, BlockCategories.getSubstituteBlock(target));
+				return setBlockAt(source, BlockCategories.getSubstituteBlock(target), null);
 			}
 		} else if(constructionStage == ConstructionStage.INTERIOR_FINISHING) {
 			//place interior blocks & replace substitute blocks with the final blocks
 			if(BlockCategories.isBaseConstructionBlock(target.getMaterial()) || BlockCategories.isInteriorStageBlock(target.getMaterial())) {
-				return setBlockAt(source, target);
+				return setBlockAt(source, target, null);
 			}
 		} else if(constructionStage == ConstructionStage.DECORATION) {
 			//Place the rest of the blocks 
-			return setBlockAt(source, target);
+			return setBlockAt(source, target, structure.blockTiles[x][y][z]);
 		}
 		return false;
 	}
+	
+	private Block getBlockAt(int x, int y, int z) {
+		int worldX = zone.pos.getBlockX() + x;
+		int worldY = zone.averageTerrainLevel - StructureFactory.undergroundLayers + y;
+		int worldZ = zone.pos.getBlockZ() + z;
+		return zone.world.getBlockAt(worldX, worldY, worldZ);
+	}
+	
+	private void joinPath(int x) {
+		int z = 0;
+		int dirX = 0;
+		int dirZ = 0;
+		switch (orientation) {
+		case NONE:
+		case SOUTH:
+		case SOUTH_WEST:
+			dirZ = -1;
+			break;
+		case WEST:
+		case NORTH_WEST:
+			z = 15-x;
+			x = 0;
+			dirX = -1;
+			break;
+		case NORTH:
+		case NORTH_EAST:
+			x = 15-x;
+			z = 15-z;
+			dirZ = 1;
+			break;
+		case EAST:
+		case SOUTH_EAST:
+			z = x;
+			x = 15;
+			dirX = 1;
+			break;
+		}
+		Block b = getBlockAt(x, StructureFactory.undergroundLayers-1, z);
+		for(int i = 1; i < 6; i++) {
+			Block b2 = getBlockAt(x+dirX*i, StructureFactory.undergroundLayers-1, z+dirZ*i);
+			if(!BlockCategories.isNaturalBlock(b2.getType())) break;
+			b2.setType(b.getType());
+		}
+	}
 
-	private boolean setBlockAt(Block b, BlockData data) {
+	private boolean setBlockAt(Block b, BlockData data, String tileState) {
 		//setAir(b);
 		if(!b.getBlockData().matches(data)) {
 			b.setBlockData(data);
+			if(tileState != null && tileState.length() > 0) setTileStateForBlock(b, tileState);
 			return true;
 		} else {
 			return false;
@@ -196,6 +248,23 @@ public class Construction {
 			return true;
 		} else {
 			return false;
+		}
+	}
+	
+	private void setTileStateForBlock(Block b, String fullStateStr) {
+		String stateStr = fullStateStr.substring(5);
+		if(fullStateStr.startsWith("SIGN:")) {
+			if(BlockCategories.isSignBlock(b.getType())) {
+				Sign sign = (Sign)b.getState();
+				String[] split = stateStr.split(StructureSaveUtil.signLineDelimiter);
+				for(int i = 0; i < 4; i++) sign.setLine(0, split[i]);
+			} else {
+				System.out.println("not a sign block!");
+			}
+		} else if(fullStateStr.startsWith("BANR:")) {
+			//TODO make banners from data
+		} else if(fullStateStr.startsWith("SKUL:")) {
+			//TODO make skulls from data
 		}
 	}
 }

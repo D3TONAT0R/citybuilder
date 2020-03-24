@@ -1,7 +1,9 @@
+C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\StructureFrontline.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\userinteractive\GUIHandler.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\userinteractive\ItemClickEvents.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\zones\ZoneType.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\io\CitySaveUtil.java
+C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\util\SkullDataUtil.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\io\StructureSaveUtil.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\zones\ZoneDensity.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\zones\RealEstateData.java
@@ -16,6 +18,7 @@ C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\io\
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\userinteractive\HotbarHandler.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\Construction.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\framework\PluginLoop.java
+C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\io\NBTSaveUtil.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\framework\CBMain.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\StructureFactory.java
 C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\framework\ChunkPosition.java

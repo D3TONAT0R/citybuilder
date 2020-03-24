@@ -195,6 +195,21 @@ public class BlockCategories {
 			Material.DARK_OAK_BUTTON,
 			Material.DARK_OAK_PRESSURE_PLATE,
 		};
+	
+	public static final Material[] signBlocks = new Material[] {
+			Material.OAK_SIGN,
+			Material.OAK_WALL_SIGN,
+			Material.SPRUCE_SIGN,
+			Material.SPRUCE_WALL_SIGN,
+			Material.BIRCH_SIGN,
+			Material.BIRCH_WALL_SIGN,
+			Material.JUNGLE_SIGN,
+			Material.JUNGLE_WALL_SIGN,
+			Material.ACACIA_SIGN,
+			Material.ACACIA_WALL_SIGN,
+			Material.DARK_OAK_SIGN,
+			Material.DARK_OAK_WALL_SIGN,
+		};
 		
 	public static final Material[] interiorFinishingStageBlocks = new Material[] {
 		Material.GLASS, Material.GLASS_PANE, Material.OAK_DOOR, Material.BIRCH_DOOR, Material.SPRUCE_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR, Material.IRON_DOOR  
@@ -230,6 +245,10 @@ public class BlockCategories {
 	
 	public static boolean isDecorationStageBlock(Material block) {
 		return contains(decorationBlocks, block) || contains(redstoneComponentBlocks, block) || contains(carpetBlocks, block);
+	}
+	
+	public static boolean isSignBlock(Material block) {
+		return contains(signBlocks, block);
 	}
 	
 	public static BlockData getSubstituteBlock(BlockData source) {

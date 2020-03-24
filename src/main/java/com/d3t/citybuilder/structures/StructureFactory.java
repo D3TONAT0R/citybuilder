@@ -19,6 +19,7 @@ public class StructureFactory {
 
 	public static final Material infolineBaseBlock = Material.BLACK_CONCRETE;
 	public static final Material infolinePathBlock = Material.EMERALD_BLOCK;
+	public static final Material infolineSecondaryPathBlock = Material.LAPIS_BLOCK;
 
 	public static final int structureHeightTreshold = 8;
 	public static final int undergroundLayers = 8;
@@ -28,7 +29,7 @@ public class StructureFactory {
 	public String name;
 	public Material[] infoline = new Material[16];
 	private BlockData[][][] blocks;
-	private TileState[][][] tileStates;
+	private String[][][] tileStates;
 	private Structure structure;
 	
 
@@ -49,6 +50,12 @@ public class StructureFactory {
 		int lawfulHeight = getLawfulStructureHeight(totalHeight);
 		fetchBlocksFromChunk();
 		structure = new Structure(blocks, tileStates, name, category, creator.getName(), 1, 1, lawfulHeight, new RealEstateData[0]);
+		for(int i = 0; i < 16; i++) {
+			Material m = infoline[i];
+			if(m == infolinePathBlock) structure.frontline[i] = StructureFrontline.MAIN_PATH;
+			else if(m == infolinePathBlock) structure.frontline[i] = StructureFrontline.SECONDARY_PATH;
+			else structure.frontline[i] = StructureFrontline.NOTHING;
+		}
 	}
 
 	public static void onBeginCreateNewStructure(Player p, String name, String category, boolean requireInfoline) {
@@ -72,7 +79,7 @@ public class StructureFactory {
 
 	private boolean hasValidInfoline() {
 		for (Material m : infoline) {
-			if (m == Material.GRASS_BLOCK)
+			if (m == Material.GRASS_BLOCK || m == Material.DIRT || m == Material.STONE)
 				return false;
 		}
 		return true;
@@ -81,7 +88,7 @@ public class StructureFactory {
 	private void fetchBlocksFromChunk() {
 		int height = Math.max(getStructureHeightPeak() + undergroundLayers, undergroundLayers+4);
 		blocks = new BlockData[16][height][16];
-		tileStates = new TileState[16][height][16];
+		tileStates = new String[16][height][16];
 		int dataX = 0;
 		for (int x = chunk.getBlockX(); x < chunk.getBlockX() + 16; x++) {
 			int dataZ = 0;
@@ -92,7 +99,7 @@ public class StructureFactory {
 					blocks[dataX][dataY][dataZ] = b.getBlockData();
 					BlockState state = b.getState();
 					if(state instanceof TileState && shouldSaveTileState((TileState)state)) {
-						tileStates[dataX][dataY][dataZ] = (TileState)state;
+						tileStates[dataX][dataY][dataZ] = StructureSaveUtil.getTileStateSaveString((TileState)state);
 					}
 					dataY++;
 				}

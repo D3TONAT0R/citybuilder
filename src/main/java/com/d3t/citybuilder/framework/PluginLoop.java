@@ -2,7 +2,6 @@ package com.d3t.citybuilder.framework;
 
 import org.bukkit.entity.Player;
 
-import com.d3t.citybuilder.cities.City;
 import com.d3t.citybuilder.userinteractive.GUIHandler;
 
 public class PluginLoop implements Runnable {

@@ -151,6 +151,7 @@ public class Zone {
 			//if(!Arrays.equals(neighborRoadmap, newNRM)) {
 			neighborRoadmap = newNRM;
 			buildRoad();
+			if(building != null) building.updateConnectionsToRoad();
 			/*} else {
 				CBMain.log.info("not hoi");
 			}*/

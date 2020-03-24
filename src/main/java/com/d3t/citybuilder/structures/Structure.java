@@ -1,7 +1,6 @@
 package com.d3t.citybuilder.structures;
 
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.TileState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.MultipleFacing;
@@ -17,17 +16,19 @@ public class Structure {
 	public String category;
 	public String creator;
 	public BlockData[][][] blocks = new BlockData[16][32][16];
-	public TileState[][][] blockTiles = new TileState[16][32][16];
+	public String[][][] blockTiles = new String[16][32][16];
+	public StructureFrontline[] frontline = new StructureFrontline[16];
 	public int sizeX = 1;
 	public int sizeZ = 1;
 	public int legalHeight = 0;
 	public RealEstateData[] realEstateData;
+	
 
 	public Structure() {
 
 	}
 
-	public Structure(BlockData[][][] blocks, TileState[][][] tileStates, String name, String cat, String creatorName,
+	public Structure(BlockData[][][] blocks, String[][][] tileStates, String name, String cat, String creatorName,
 			int chunksX, int chunksZ, int legalHeight, RealEstateData[] realEstate) {
 		this();
 		structureName = name;
@@ -35,17 +36,18 @@ public class Structure {
 		creator = creatorName;
 		this.blocks = blocks;
 		this.blockTiles = tileStates;
+		this.frontline = new StructureFrontline[16];
 		this.sizeX = chunksX;
 		this.sizeZ = chunksZ;
 		this.legalHeight = legalHeight;
 		this.realEstateData = realEstate;
 	}
 
-	public void setTileStates(TileState[][][] states) {
+	public void setTileStates(String[][][] states) {
 		blockTiles = states;
 	}
 
-	public void setTileState(int x, int y, int z, TileState state) {
+	public void setTileState(int x, int y, int z, String state) {
 		blockTiles[x][y][z] = state;
 	}
 

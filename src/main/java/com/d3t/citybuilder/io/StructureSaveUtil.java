@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Banner;
 import org.bukkit.block.Sign;
 import org.bukkit.block.Skull;
@@ -15,9 +14,12 @@ import org.bukkit.block.data.BlockData;
 
 import com.d3t.citybuilder.framework.CBMain;
 import com.d3t.citybuilder.structures.Structure;
+import com.d3t.citybuilder.structures.StructureFrontline;
 import com.d3t.citybuilder.structures.StructureLibrary;
 import com.d3t.citybuilder.structures.TrafficStructurePieces;
 import com.d3t.citybuilder.zones.RealEstateData;
+
+import net.minecraft.server.v1_15_R1.BlockSign;
 
 public class StructureSaveUtil {
 
@@ -27,6 +29,9 @@ public class StructureSaveUtil {
 	public static final String realEstateDataSaveMark = "#REALESTATEDATA";
 	public static final String blockDataSaveMark = "#BLOCKS";
 	public static final String tileDataSaveMark = "#TILEDATA";
+	
+	public static final String signLineDelimiter = "\\n";
+	public static final String bannerPatternDelimiter = "@";
 
 	public static int successfullyLoadedFiles = 0;
 	public static int failedToLoadFiles = 0;
@@ -43,6 +48,9 @@ public class StructureSaveUtil {
 		writer.SetValue("size", String.format("%sx%s\n", s.sizeX, s.sizeZ));
 		writer.SetValue("totalheight", s.getTotalHeight());
 		writer.SetValue("legalheight", s.legalHeight);
+		String[] front = new String[16];
+		for(int i = 0; i < 16; i++) front[i] = s.frontline[i].name();
+		writer.SetValue("front", front);
 		ArrayList<String> realEstate = new ArrayList<String>();
 
 		for (RealEstateData red : s.realEstateData)
@@ -68,8 +76,7 @@ public class StructureSaveUtil {
 			for (int z = 0; z < s.blockTiles[0][0].length; z++) {
 				for (int x = 0; x < s.blockTiles.length; x++) {
 					if (s.blockTiles[x][y][z] != null) {
-						tiledata.add(
-								String.format("%s,%s,%s:%s", x, y, z, getTileStateSaveString(s.blockTiles[x][y][z])));
+						tiledata.add(String.format("%s %s %s %s", x, y, z, s.blockTiles[x][y][z]));
 					}
 				}
 			}
@@ -84,9 +91,9 @@ public class StructureSaveUtil {
 		if (state instanceof Sign) {
 			data = "SIGN:";
 			Sign sign = (Sign) state;
-			data += sign.getLine(0) + "§";
-			data += sign.getLine(1) + "§";
-			data += sign.getLine(2) + "§";
+			data += sign.getLine(0) + signLineDelimiter;
+			data += sign.getLine(1) + signLineDelimiter;
+			data += sign.getLine(2) + signLineDelimiter;
 			data += sign.getLine(3);
 		} else if (state instanceof Banner) {
 			data = "BANR:";
@@ -95,15 +102,13 @@ public class StructureSaveUtil {
 			List<Pattern> patterns = banner.getPatterns();
 			for (int i = 0; i < patterns.size(); i++) {
 				Pattern pat = patterns.get(i);
-				data += pat.getPattern().name() + "@" + pat.getColor().name();
+				data += pat.getPattern().name() + bannerPatternDelimiter + pat.getColor().name();
 				if (i < patterns.size() - 1)
 					data += ",";
 			}
 		} else if (state instanceof Skull) {
 			data = "SKUL:";
-			OfflinePlayer skullPlayer = ((Skull) state).getOwningPlayer();
-			// TODO: fetch skull data!
-			// ItemStack stack = SkullCreator.withBase64(item, base64)
+			data += NBTSaveUtil.getSkullNBTString(state);
 		} else {
 			data = "UNKNOWN";
 		}
@@ -165,10 +170,14 @@ public class StructureSaveUtil {
 		int sizeZ = Integer.parseInt(sizeStr[1]);
 		int totalHeight = reader.GetInt("totalheight");
 		int legalHeight = reader.GetInt("legalheight");
+		String[] frontStr = reader.GetArray("front");
+		StructureFrontline[] front = new StructureFrontline[16];
+		for(int i = 0; i < 16; i++) front[i] = StructureFrontline.valueOf(frontStr[i]);
 		RealEstateData[] realestate = readRealEstateData(reader.GetArray("realestatedata"));
 		BlockData[][][] blocks = readBlockData(reader.GetArray("blocks"), sizeX * 16, totalHeight, sizeZ * 16);
-		TileState[][][] tileStates = readTileStateData(reader.GetArray("tiledata"), sizeX * 16, totalHeight, sizeZ * 16);
+		String[][][] tileStates = readTileStateData(reader.GetArray("tiledata"), sizeX * 16, totalHeight, sizeZ * 16);
 		Structure s = new Structure(blocks, tileStates, name, cat, creatorName, sizeX, sizeZ, legalHeight, realestate);
+		s.frontline = front;
 		s.verifyIntegrity();
 		return s;
 	}
@@ -193,8 +202,8 @@ public class StructureSaveUtil {
 		return blocks;
 	}
 
-	private static TileState[][][] readTileStateData(String[] input, int sizeX, int sizeY, int sizeZ) {
-		TileState[][][] states = new TileState[sizeX][sizeY][sizeZ];
+	private static String[][][] readTileStateData(String[] input, int sizeX, int sizeY, int sizeZ) {
+		String[][][] states = new String[sizeX][sizeY][sizeZ];
 		boolean done = false;
 		for (String str : input) {
 			String[] split = str.split(" ");
@@ -203,7 +212,7 @@ public class StructureSaveUtil {
 			int z = Integer.parseInt(split[2]);
 			String rest = str.substring(split[0].length() + split[1].length() + split[2].length() + 3,
 					str.length() - 1);
-			// TODO: create tilestates
+			states[x][y][z] = rest;
 		}
 		return states;
 	}
