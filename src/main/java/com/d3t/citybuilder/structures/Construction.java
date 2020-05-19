@@ -54,6 +54,9 @@ public class Construction {
 	private void onFinishConstruction() {
 		updateConnectionsToRoad();
 		CBMain.log.info("CONSTRUCTION DONE!");
+		if(structure.realEstateData != null) {
+			zone.realEstate = structure.realEstateData.clone();
+		}
 	}
 	
 	public void updateConnectionsToRoad() {

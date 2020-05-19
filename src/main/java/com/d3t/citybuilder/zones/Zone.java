@@ -34,6 +34,7 @@ public class Zone {
 	public int averageTerrainLevel = 64;
 	
 	public Construction building;
+	public RealEstateData[] realEstate;
 	
 	public Zone(World w, int x, int z, City c) {
 		city = c;

@@ -28,7 +28,7 @@ public class City {
 	
 	public String cityName;
 	
-	public CityStatistics stats = new CityStatistics();
+	public CityStatistics stats = new CityStatistics(this);
 	
 	private int lastCheckedTime = 0;
 	
@@ -83,7 +83,7 @@ public class City {
 	}
 	
 	private void onDayStart() {
-		stats.ageInDays++;
+		stats.onDayStart();
 		stats.moneyBalance += stats.moneyBalance*0.05f;
 	}
 	
