@@ -10,25 +10,35 @@ import com.d3t.citybuilder.zones.Zone;
 
 public class CityStatistics {
 	
+	public static final double workforcePopulationPercentage = 0.3D;
+	
 	private City city;
 	
 	//Indirect statistics - these are automatically calculated
 	private int ageInDays;
 	private FiveScaleIntList population = new FiveScaleIntList();
+	private ThreeScaleIntList workplaceCount = new ThreeScaleIntList();
 	private ThreeScaleIntList workplaceAvailability = new ThreeScaleIntList();
+	
+	public int constructionEfficiency;
 	
 	public FiveScaleIntList residenceCount;
 	public int retailCount;
 	public int officeCount;
 	public ThreeScaleIntList industryCount;
+	public ThreeScaleIntList customRealEstateCount;
 	
 	public FiveScaleIntList emptyResidenceCount;
 	public int emptyRetailCount;
 	public int emptyOfficeCount;
 	public ThreeScaleIntList emptyIndustryCount;
 	
+	public int realEstateCount;
+	public int emptyRealEstateCount;
+	public float realEstateEmptinessRate;
+	
 	public float employmentRate; //The city's employment rate.
-	public float workplaceSaturationRate; //A value lower than 1 means that there is demand of workplaces due to unemployment. A value higher than 1 means the city is oversaturated with workplaces.
+	public float workplaceSaturationRate; //A value lower than 0 means that there is demand of workplaces due to unemployment. A value higher than 0 means the city is oversaturated with workplaces.
 	public long moneyBalance; //The city's treasury.
 	
 	public CityStatistics(City city) {
@@ -80,7 +90,10 @@ public class CityStatistics {
 		//Re-initialize all values
 		RealEstateData[] estates = getAllRealEstate();
 		population = new FiveScaleIntList();
+		workplaceCount = new ThreeScaleIntList();
 		workplaceAvailability = new ThreeScaleIntList();
+		constructionEfficiency = 10;
+		
 		residenceCount = new FiveScaleIntList();
 		retailCount = 0;
 		officeCount = 0;
@@ -107,7 +120,7 @@ public class CityStatistics {
 					retailCount++;
 					if(re.hasTenant()) {
 						//Add the workplaces
-						workplaceAvailability.med += re.residentsOrWorkplaces;
+						workplaceCount.med += re.residentsOrWorkplaces;
 					} else {
 						//The shop is empty
 						emptyRetailCount++;
@@ -116,7 +129,7 @@ public class CityStatistics {
 					officeCount++;
 					if(re.hasTenant()) {
 						//Add the workplaces
-						workplaceAvailability.high += re.residentsOrWorkplaces;
+						workplaceCount.high += re.residentsOrWorkplaces;
 					} else {
 						//The office space is empty
 						emptyOfficeCount++;
@@ -126,20 +139,31 @@ public class CityStatistics {
 				industryCount.add(scale, 1);
 				if(re.hasTenant()) {
 					//shift the workspace "wealth" down by one, then add them
-					workplaceAvailability.add(Math.max(0, scale-1), re.residentsOrWorkplaces);
+					//This results in agriculture and factories being low class and hightech being middle class
+					workplaceCount.add(Math.max(0, scale-1), re.residentsOrWorkplaces);
+					if(scale > 0) constructionEfficiency += 2;
 				} else {
 					//The factory/farm is empty
 					emptyIndustryCount.add(scale, 1);
 				}
+			} else if(re.type.isCustom()) {
+				customRealEstateCount.add(scale, 1);
+				//The hasTenant flag is not applicable in a custom real estate
+				if(re.residentsOrWorkplaces > 0) workplaceCount.add(scale, re.residentsOrWorkplaces);
 			}
 		}
+		
+		realEstateCount = residenceCount.getTotal()+retailCount+officeCount+industryCount.getTotal()+customRealEstateCount.getTotal();
+		emptyRealEstateCount = emptyResidenceCount.getTotal()+emptyRetailCount+emptyOfficeCount+emptyIndustryCount.getTotal();
+		realEstateEmptinessRate = emptyRealEstateCount/(float)realEstateCount;
 		
 		//Calculate the employment situation
 		//RESIDENTAL WEALTH TO WORKPLACE WEALTH CONVERSION:
 		//RES	lowest	low		med		high	highest
 		//WORK	L/M		L/M		M/H		M/H		H
+		workplaceAvailability = workplaceCount.clone();
 		for(int cl = 0; cl < 5; cl++) {
-			int workers = getPopulationPercentage(cl, 0.3D); //30% of all habitants are workers
+			int workers = getPopulationPercentage(cl, workforcePopulationPercentage); //30% of all habitants are workers
 			int targetWorkStage;
 			int altWorkStage = -1;
 			if(cl == 0) {
@@ -170,5 +194,12 @@ public class CityStatistics {
 				}
 			}
 		}
+		int totalWorkers = getPopulationPercentage(workforcePopulationPercentage);
+		int employedWorkers = totalWorkers;
+		for(int w : workplaceAvailability.toArray()) {
+			if(w < 0) employedWorkers += w; //Calculate the number of employed workers by deducting the amount of demanded workplaces
+		}
+		employmentRate = employedWorkers/(float)totalWorkers;
+		workplaceSaturationRate = workplaceAvailability.getTotal()/workplaceCount.getTotal();
 	}
 }

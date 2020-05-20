@@ -50,4 +50,16 @@ public enum ZoneType {
 			return this.name();
 		}
 	}
+	
+	public boolean isAutoBuildable() {
+		switch(this) {
+		case Residental:
+		case Retail:
+		case Office:
+		case Industrial:
+		case Farmland:
+			return true;
+		default: return false;
+		}
+	}
 }

@@ -85,6 +85,16 @@ public class City {
 	private void onDayStart() {
 		stats.onDayStart();
 		stats.moneyBalance += stats.moneyBalance*0.05f;
+		if(constructions.size() < getMaxSimultaneousConstructions()) {
+			//Look for zones to build on
+			//TODO: make the search demand- and appeal-weighted
+			for (Zone z : chunks.values()) {
+				if(z.isAutoBuildable()) {
+					//TODO: choose appropriate building & orientation
+					z.build(StructureLibrary.allStructures.get("xy"), Orientation.NONE, false, false, false);
+				}
+			}
+		}
 	}
 	
 	public boolean setZone(Player sender, int chunkX, int chunkZ, ZoneType zone, ZoneDensity density) {
@@ -125,5 +135,9 @@ public class City {
 	
 	public void registerConstruction(Construction cons) {
 		if(!constructions.contains(cons)) constructions.add(cons);
+	}
+	
+	public int getMaxSimultaneousConstructions() {
+		return (int)Math.ceil(stats.constructionEfficiency/25.0d);
 	}
 }

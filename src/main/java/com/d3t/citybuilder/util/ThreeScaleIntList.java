@@ -45,4 +45,12 @@ public class ThreeScaleIntList {
 	public void add(int i, int value) {
 		set(i, get(i)+value);
 	}
+	
+	public ThreeScaleIntList clone() {
+		ThreeScaleIntList l = new ThreeScaleIntList();
+		l.low = low;
+		l.med = med;
+		l.high = high;
+		return l;
+	}
 }

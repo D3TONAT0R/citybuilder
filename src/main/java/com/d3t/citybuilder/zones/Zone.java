@@ -129,6 +129,10 @@ public class Zone {
 		}
 	}
 	
+	public boolean isAutoBuildable() {
+		return building == null && zoneType.isAutoBuildable();
+	}
+	
 	private void buildRoad() {
 		String conn = "";
 		for(int i = 0; i < 4; i++) {
