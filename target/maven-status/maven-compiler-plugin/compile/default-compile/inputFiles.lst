@@ -1,31 +1,37 @@
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\StructureFrontline.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\userinteractive\GUIHandler.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\userinteractive\ItemClickEvents.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\zones\ZoneType.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\io\CitySaveUtil.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\util\SkullDataUtil.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\io\StructureSaveUtil.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\zones\ZoneDensity.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\zones\RealEstateData.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\userinteractive\ClickEventHandler.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\StructureLibrary.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\cities\CityAreaHandler.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\io\FileUtil.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\ConstructionStage.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\Orientation.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\BuildTask.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\io\SaveHandler.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\userinteractive\HotbarHandler.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\Construction.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\framework\PluginLoop.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\io\NBTSaveUtil.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\framework\CBMain.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\StructureFactory.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\framework\ChunkPosition.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\cities\City.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\Structure.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\BlockCategories.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\structures\TrafficStructurePieces.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\zones\Zone.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\cities\CityStatistics.java
-C:\Users\gdv\eclipse-workspace\citybuilder\src\main\java\com\d3t\citybuilder\framework\Commands.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\zones\RealEstateData.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\io\CitySaveUtil.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\userinteractive\HotbarHandler.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\framework\ChunkPosition.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\util\SkullDataUtil.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\io\StructureSaveUtil.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\util\RealEstateType.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\structures\StructureFactory.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\structures\BuildTask.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\structures\StructureLibrary.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\structures\TrafficStructurePieces.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\structures\Orientation.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\cities\DemandManager.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\cities\City.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\structures\Structure.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\io\NBTSaveUtil.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\zones\ZoneDensity.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\zones\ZoneType.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\io\SaveHandler.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\structures\StructureFrontline.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\userinteractive\GUIHandler.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\structures\BlockCategories.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\framework\CBMain.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\structures\Construction.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\structures\ConstructionStage.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\cities\CityStatistics.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\userinteractive\ItemClickEvents.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\util\ThreeScaleIntList.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\framework\PluginLoop.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\userinteractive\ClickEventHandler.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\cities\CityAreaHandler.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\realestatescanner\RealEstateScanManager.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\zones\Zone.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\framework\Commands.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\util\FiveScaleIntList.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\io\FileUtil.java
+C:\Users\Yanic Gottardi\Documents\GitHub\citybuilder\src\main\java\com\d3t\citybuilder\realestatescanner\RealEstateScan.java

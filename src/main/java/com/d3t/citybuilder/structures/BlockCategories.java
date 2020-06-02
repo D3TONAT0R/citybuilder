@@ -91,6 +91,41 @@ public class BlockCategories {
 		Material.PURPLE_CARPET
 	};
 	
+	public static final Material[] bannerBlocks = new Material[] {
+		Material.WHITE_BANNER,
+		Material.LIGHT_GRAY_BANNER,
+		Material.GRAY_BANNER,
+		Material.BLACK_BANNER,
+		Material.RED_BANNER,
+		Material.PINK_BANNER,
+		Material.ORANGE_BANNER,
+		Material.YELLOW_BANNER,
+		Material.BROWN_BANNER,
+		Material.LIME_BANNER,
+		Material.GREEN_BANNER,
+		Material.CYAN_BANNER,
+		Material.BLUE_BANNER,
+		Material.LIGHT_BLUE_BANNER,
+		Material.MAGENTA_BANNER,
+		Material.PURPLE_BANNER,
+		Material.WHITE_WALL_BANNER,
+		Material.LIGHT_GRAY_WALL_BANNER,
+		Material.GRAY_WALL_BANNER,
+		Material.BLACK_WALL_BANNER,
+		Material.RED_WALL_BANNER,
+		Material.PINK_WALL_BANNER,
+		Material.ORANGE_WALL_BANNER,
+		Material.YELLOW_WALL_BANNER,
+		Material.BROWN_WALL_BANNER,
+		Material.LIME_WALL_BANNER,
+		Material.GREEN_WALL_BANNER,
+		Material.CYAN_WALL_BANNER,
+		Material.BLUE_WALL_BANNER,
+		Material.LIGHT_BLUE_WALL_BANNER,
+		Material.MAGENTA_WALL_BANNER,
+		Material.PURPLE_WALL_BANNER
+		};
+	
 	public static final Material[] terracottaBlocks = new Material[] {
 		Material.TERRACOTTA,
 		Material.WHITE_TERRACOTTA,
@@ -169,47 +204,69 @@ public class BlockCategories {
 	};
 	
 	public static final Material[] redstoneComponentBlocks = new Material[] {
-			Material.REDSTONE_WIRE,
-			Material.REDSTONE_TORCH,
-			Material.REDSTONE_WALL_TORCH,
-			Material.LEVER,
-			Material.TRIPWIRE,
-			Material.TRIPWIRE_HOOK,
-			Material.REPEATER,
-			Material.COMPARATOR,
-			Material.DAYLIGHT_DETECTOR,
-			Material.OBSERVER,
-			Material.STONE_PRESSURE_PLATE,
-			Material.LIGHT_WEIGHTED_PRESSURE_PLATE,
-			Material.HEAVY_WEIGHTED_PRESSURE_PLATE,
-			Material.OAK_BUTTON,
-			Material.OAK_PRESSURE_PLATE,
-			Material.SPRUCE_BUTTON,
-			Material.SPRUCE_PRESSURE_PLATE,
-			Material.BIRCH_BUTTON,
-			Material.BIRCH_PRESSURE_PLATE,
-			Material.JUNGLE_BUTTON,
-			Material.JUNGLE_PRESSURE_PLATE,
-			Material.ACACIA_BUTTON,
-			Material.ACACIA_PRESSURE_PLATE,
-			Material.DARK_OAK_BUTTON,
-			Material.DARK_OAK_PRESSURE_PLATE,
-		};
+		Material.REDSTONE_WIRE,
+		Material.REDSTONE_TORCH,
+		Material.REDSTONE_WALL_TORCH,
+		Material.LEVER,
+		Material.TRIPWIRE,
+		Material.TRIPWIRE_HOOK,
+		Material.REPEATER,
+		Material.COMPARATOR,
+		Material.DAYLIGHT_DETECTOR,
+		Material.OBSERVER,
+		Material.STONE_PRESSURE_PLATE,
+		Material.LIGHT_WEIGHTED_PRESSURE_PLATE,
+		Material.HEAVY_WEIGHTED_PRESSURE_PLATE,
+		Material.OAK_BUTTON,
+		Material.OAK_PRESSURE_PLATE,
+		Material.SPRUCE_BUTTON,
+		Material.SPRUCE_PRESSURE_PLATE,
+		Material.BIRCH_BUTTON,
+		Material.BIRCH_PRESSURE_PLATE,
+		Material.JUNGLE_BUTTON,
+		Material.JUNGLE_PRESSURE_PLATE,
+		Material.ACACIA_BUTTON,
+		Material.ACACIA_PRESSURE_PLATE,
+		Material.DARK_OAK_BUTTON,
+		Material.DARK_OAK_PRESSURE_PLATE
+	};
 	
 	public static final Material[] signBlocks = new Material[] {
-			Material.OAK_SIGN,
-			Material.OAK_WALL_SIGN,
-			Material.SPRUCE_SIGN,
-			Material.SPRUCE_WALL_SIGN,
-			Material.BIRCH_SIGN,
-			Material.BIRCH_WALL_SIGN,
-			Material.JUNGLE_SIGN,
-			Material.JUNGLE_WALL_SIGN,
-			Material.ACACIA_SIGN,
-			Material.ACACIA_WALL_SIGN,
-			Material.DARK_OAK_SIGN,
-			Material.DARK_OAK_WALL_SIGN,
-		};
+		Material.OAK_SIGN,
+		Material.OAK_WALL_SIGN,
+		Material.SPRUCE_SIGN,
+		Material.SPRUCE_WALL_SIGN,
+		Material.BIRCH_SIGN,
+		Material.BIRCH_WALL_SIGN,
+		Material.JUNGLE_SIGN,
+		Material.JUNGLE_WALL_SIGN,
+		Material.ACACIA_SIGN,
+		Material.ACACIA_WALL_SIGN,
+		Material.DARK_OAK_SIGN,
+		Material.DARK_OAK_WALL_SIGN
+	};
+	
+	public static final Material[] otherNonObstructingBlocks = new Material[] {
+		Material.LEVER,
+		Material.LANTERN,
+		Material.STONE_PRESSURE_PLATE,
+		Material.LIGHT_WEIGHTED_PRESSURE_PLATE,
+		Material.HEAVY_WEIGHTED_PRESSURE_PLATE,
+		Material.OAK_BUTTON,
+		Material.OAK_PRESSURE_PLATE,
+		Material.SPRUCE_BUTTON,
+		Material.SPRUCE_PRESSURE_PLATE,
+		Material.BIRCH_BUTTON,
+		Material.BIRCH_PRESSURE_PLATE,
+		Material.JUNGLE_BUTTON,
+		Material.JUNGLE_PRESSURE_PLATE,
+		Material.ACACIA_BUTTON,
+		Material.ACACIA_PRESSURE_PLATE,
+		Material.DARK_OAK_BUTTON,
+		Material.DARK_OAK_PRESSURE_PLATE,
+		Material.TRIPWIRE,
+		Material.TRIPWIRE_HOOK
+	};
 		
 	public static final Material[] interiorFinishingStageBlocks = new Material[] {
 		Material.GLASS, Material.GLASS_PANE, Material.OAK_DOOR, Material.BIRCH_DOOR, Material.SPRUCE_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR, Material.IRON_DOOR  
@@ -257,5 +314,17 @@ public class BlockCategories {
 		if(contains(glazedTerracottaBlocks, mat)) return Material.TERRACOTTA.createBlockData();
 		if(contains(concreteBlocks, mat)) return Material.STONE.createBlockData();
 		return source;
+	}
+	
+	public static boolean isGlassBlock(Material m) {
+		return contains(glassBlocks, m);
+	}
+
+	public static boolean isCarpet(Material m) {
+		return contains(carpetBlocks, m);
+	}
+	
+	public static boolean isNonObstructingBlock(Material m) {
+		return m.isAir() || contains(otherNonObstructingBlocks,m) || contains(carpetBlocks, m) || contains(signBlocks, m);
 	}
 }
