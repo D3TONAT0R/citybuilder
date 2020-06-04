@@ -6,7 +6,13 @@ import org.bukkit.command.CommandSender;
 public class RealEstateScanManager {
 
 	public void startScan(World w, int x, int y, int z, CommandSender executor) {
-		RealEstateScan scan = new RealEstateScan(w, x, y, z);
+		try {
+			RealEstateScan scan = new RealEstateScan(w, x, y, z, false);
+		}
+		catch(Exception e) {
+			System.out.println("Scan failed!");
+			e.printStackTrace();
+		}
 	}
 	
 }

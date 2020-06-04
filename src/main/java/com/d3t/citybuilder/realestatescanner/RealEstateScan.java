@@ -1,5 +1,7 @@
 package com.d3t.citybuilder.realestatescanner;
 
+import java.rmi.UnexpectedException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.bukkit.Material;
@@ -34,6 +36,11 @@ public class RealEstateScan {
 			} else {
 				return false;
 			}
+		}
+		
+		@Override
+		public int hashCode() {
+			return x*32768+z*256+y;
 		}
 		
 		public BlockPos getAbove() {
@@ -78,71 +85,155 @@ public class RealEstateScan {
 		Door
 	}
 	
-	public static final int maxBlocksToScan = 2000;
+	public enum ScanStatus {
+		SCANNING_FLOOR,
+		SCANNING_ROOMS,
+		SCANNING_LIGHT,
+		SCANNING_AIRTIGHTNESS,
+		SCANNING_FEATURES,
+		SCANNING_ACCESS,
+		ERROR_TOO_SMALL,
+		ERROR_TOO_LARGE,
+		ERROR_OUT_OF_BOUNDS,
+		ERROR_NOT_AIRTIGHT,
+		ERROR_TOO_DARK,
+		ERROR_NOT_ACCESSIBLE;
+		
+		public boolean isError() {
+			return this.name().startsWith("ERROR");
+		}
+	}
+	
+	public class NeighborData {
+		public NeighborCheckResult result;
+		public Direction direction;
+		public BlockPos pos;
+		
+		public NeighborData(NeighborCheckResult r, Direction d, BlockPos p) {
+			result = r;
+			direction = d;
+			pos = p;
+		}
+	}
+	
+	public static final int maxFloorBlocks = 1000;
+	public static final int maxVolume = 3000;
 	public static final int maxExtentsFromOrigin = 32;
+	
+	public static final Direction[] allDirections = new Direction[] {Direction.XPos, Direction.XNeg, Direction.ZPos, Direction.ZNeg};
 	
 	World world;
 	BlockPos origin;
 	int originX;
 	int originY;
 	int originZ;
+	boolean useChunkBoundaries;
+	int chunkX;
+	int chunkZ;
 	
 	HashMap<BlockPos, Integer> scannedBlocks = new HashMap<BlockPos, Integer>();
 	int roomCounter = 0;
 	
-	public RealEstateScan(World w, int x, int y, int z) {
+	ScanStatus status;
+	
+	public RealEstateScan(World w, int x, int y, int z, boolean chunkBound) throws Exception {
 		world = w;
 		originX = x;
 		originY = y;
 		originZ = z;
+		if(chunkBound) {
+			useChunkBoundaries = true;
+			int[] chunk = getChunk(new BlockPos(x,y,z));
+			chunkX = chunk[0];
+			chunkZ = chunk[1];
+		}
 		//Start a recurive scan across the whole apartment
-		scanPosition(new BlockPos(x,y,z), (byte)0);
-		//TODO: do a illumination scan (light sources and skylight)
-		//TODO: double check room detection and check for airtightness
+		status = ScanStatus.SCANNING_FLOOR;
+		scanFloorPosition(new BlockPos(x,y,z));
+		//Assign a room number for each separated room
+		int attempts = 32;
+		int roomNum = 0;
+		while(attempts > 0) {
+			attempts--;
+			if(scannedBlocks.containsValue(-1)) {
+				//Find the first non-assigned space, then do a recursive check for the whole room
+				BlockPos pos = null;
+				for(BlockPos bp : scannedBlocks.keySet()) {
+					if(scannedBlocks.get(bp) == -1) {
+						pos = bp;
+						break;
+					}
+				}
+				if(pos != null) {
+					scanRoom(pos, roomNum);
+					roomNum++;
+				} else {
+					throw new UnexpectedException("An unassigned space was located but could not be feteched!");
+				}
+			} else {
+				//All rooms have been assigned
+				attempts = 0;
+			}
+		}
+		if(scannedBlocks.containsValue(-1)) {
+			throw new UnexpectedException("An unassigned space was located after the assignment!");
+		}
+		//Check airtightness in each room
+		for(int i = 0; i < roomNum; i++) {
+			
+		}
+		//TODO: count actual rooms
+		//TODO: do an illumination scan (light sources and skylight)
 		//TODO: check for bathrooms and kitchen
 		//TODO: determine the apartment's quality class
 	}
 	
-	private void scanPosition(BlockPos pos, int roomNum) {
+	private void scanFloorPosition(BlockPos pos) {
+		if(status.isError()) return;
 		if(canStand(pos)) {
-			if(scannedBlocks.size() < maxBlocksToScan) {
-				scannedBlocks.put(pos, roomNum);
+			if(scannedBlocks.size() < maxFloorBlocks) {
+				scannedBlocks.put(pos, -1);
 				//roomSize[roomNum]++;
-				findNeighbors(pos,roomNum);
+				NeighborData[] neighbors = findFloorNeighbors(pos);
+				for(NeighborData n : neighbors) {
+					if(isWithinBoundaries(n.pos)) {
+						scanFloorPosition(n.pos);
+					} else {
+						status = ScanStatus.ERROR_OUT_OF_BOUNDS;
+					}
+				}
 			} else {
 				//Maximum reached, abort
-				
+				status = ScanStatus.ERROR_TOO_LARGE;
 			}
 		} else {
 			//The area is not valid, this should not happen
 		}
 	}
 	
-	private void findNeighbors(BlockPos from, int roomNum) {
-		Direction[] dirs = new Direction[] {
-			Direction.XPos,
-			Direction.XNeg,
-			Direction.ZPos,
-			Direction.ZNeg
-		};
-		for(Direction d : dirs) {
+	private NeighborData[] findFloorNeighbors(BlockPos from) {
+		ArrayList<NeighborData> list = new ArrayList<NeighborData>();
+		for(Direction d : allDirections) {
 			NeighborCheckResult result = checkNeighbor(from, d);
 			if(result != NeighborCheckResult.Invalid) {
 				BlockPos pos = d.apply(from);
 				//A valid neighbor was found, continue the recursion
 				if(result == NeighborCheckResult.Ascending) pos = pos.getAbove();
 				else if(result == NeighborCheckResult.Descending) pos = pos.getBelow();
-				else if(result == NeighborCheckResult.Door) {
+				if(result == NeighborCheckResult.Door) {
 					if(crossDoor(pos, d)) {
-						roomCounter++;
-						roomNum = roomCounter;
-					} else {
-						return;
+						//The door was successfully crossed, move through the door
+						pos = d.apply(pos);
+						if(!isChecked(pos)) list.add(new NeighborData(result,d,pos));
 					}
+				} else {
+					//It is a regular neighbor spot
+					if(!isChecked(pos)) list.add(new NeighborData(result,d,pos));
 				}
-				if(!isChecked(pos)) scanPosition(pos, roomNum);
 			}
 		}
+		NeighborData[] arr = new NeighborData[list.size()];
+		return list.toArray(arr);
 	}
 	
 	private NeighborCheckResult checkNeighbor(BlockPos from, Direction dir) {
@@ -152,6 +243,7 @@ public class RealEstateScan {
 			return NeighborCheckResult.Door;
 		}
 		if(isWall(pos)) return NeighborCheckResult.Invalid;
+		//TODO: only account correctly facing stairs and slabs for acending/descending
 		if(canStand(pos)) {
 			//The position is valid without any elevation changes
 			return NeighborCheckResult.Valid;
@@ -167,8 +259,18 @@ public class RealEstateScan {
 		}
 	}
 	
+	private void scanRoom(BlockPos pos, int room) {
+		scannedBlocks.put(pos, room);
+		NeighborData[] neighbors = findFloorNeighbors(pos);
+		for(NeighborData n : neighbors) {
+			if(n.result != NeighborCheckResult.Door && n.result != NeighborCheckResult.Invalid) {
+				if(scannedBlocks.get(n.pos) == -1) scanRoom(n.pos, room);
+			}
+		}
+	}
+	
 	//Checks if the block is a valid floor block. The block must be solid (Exceptions: glass, stairs, slabs)
-	private boolean isValidFloor(BlockPos pos) {
+ 	private boolean isValidFloor(BlockPos pos) {
 		Block b = world.getBlockAt(pos.x, pos.y, pos.z);
 		Material m = b.getType();
 		if(m.isSolid() || BlockCategories.isGlassBlock(m) || b instanceof Stairs || b instanceof Slab) {
@@ -220,6 +322,37 @@ public class RealEstateScan {
 		} else {
 			//The door is not facing the correct direction
 			return false;
+		}
+	}
+	
+	private int[] getChunk(BlockPos pos) {
+		int[] i = new int[2];
+		i[0] = (int)Math.floor(pos.x/16);
+		i[1] = (int)Math.floor(pos.z/16);
+		return i;
+	}
+	
+	private boolean isWithinBoundaries(BlockPos pos) {
+		if(useChunkBoundaries) {
+			int[] c = getChunk(pos);
+			if(c[0] != chunkX || c[1] != chunkZ) {
+				//Not within the origin chunk
+				return false;
+			} else {
+				int icx = pos.x%16;
+				int icy = pos.z%16;
+				if(icx == 0 || icy == 0 || icx == 15 || icy == 15) {
+					//At the edge of the chunk: There is no way there will be a wall inside the same chunk
+					return false;
+				}
+			}
+			return true;
+		} else {
+			if(Math.abs(pos.x-originX) > maxExtentsFromOrigin || Math.abs(pos.z-originZ) > maxExtentsFromOrigin) {
+				//Too far from origin point
+				return false;
+			}
+			return true;
 		}
 	}
 }

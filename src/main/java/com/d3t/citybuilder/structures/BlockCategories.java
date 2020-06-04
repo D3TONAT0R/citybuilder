@@ -267,6 +267,24 @@ public class BlockCategories {
 		Material.TRIPWIRE,
 		Material.TRIPWIRE_HOOK
 	};
+	
+	public static final Material[] otherNonAirtightBlocks = new Material[] {
+		Material.COBWEB,
+		Material.CACTUS,
+		Material.BAMBOO,
+		Material.PLAYER_HEAD,
+		Material.PLAYER_WALL_HEAD,
+		Material.CREEPER_HEAD,
+		Material.CREEPER_WALL_HEAD,
+		Material.SKELETON_SKULL,
+		Material.SKELETON_WALL_SKULL,
+		Material.OAK_LEAVES,
+		Material.BIRCH_LEAVES,
+		Material.SPRUCE_LEAVES,
+		Material.JUNGLE_LEAVES,
+		Material.ACACIA_LEAVES,
+		Material.DARK_OAK_LEAVES
+	};
 		
 	public static final Material[] interiorFinishingStageBlocks = new Material[] {
 		Material.GLASS, Material.GLASS_PANE, Material.OAK_DOOR, Material.BIRCH_DOOR, Material.SPRUCE_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR, Material.IRON_DOOR  
@@ -326,5 +344,9 @@ public class BlockCategories {
 	
 	public static boolean isNonObstructingBlock(Material m) {
 		return m.isAir() || contains(otherNonObstructingBlocks,m) || contains(carpetBlocks, m) || contains(signBlocks, m);
+	}
+	
+	public static boolean isAirtightBlock(Material m) {
+		return !isNonObstructingBlock(m) && !contains(otherNonAirtightBlocks, m);
 	}
 }
