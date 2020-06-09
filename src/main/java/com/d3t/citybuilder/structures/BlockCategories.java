@@ -265,7 +265,10 @@ public class BlockCategories {
 		Material.DARK_OAK_BUTTON,
 		Material.DARK_OAK_PRESSURE_PLATE,
 		Material.TRIPWIRE,
-		Material.TRIPWIRE_HOOK
+		Material.TRIPWIRE_HOOK,
+		Material.BARRIER,
+		Material.STRUCTURE_VOID,
+		Material.CAVE_AIR
 	};
 	
 	public static final Material[] otherNonAirtightBlocks = new Material[] {
