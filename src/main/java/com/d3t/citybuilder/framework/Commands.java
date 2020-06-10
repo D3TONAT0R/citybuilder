@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import com.d3t.citybuilder.cities.City;
 import com.d3t.citybuilder.io.CitySaveUtil;
 import com.d3t.citybuilder.io.StructureSaveUtil;
+import com.d3t.citybuilder.realestatescanner.RealEstateScan;
 import com.d3t.citybuilder.structures.Orientation;
 import com.d3t.citybuilder.structures.Structure;
 import com.d3t.citybuilder.structures.StructureFactory;
@@ -131,6 +132,16 @@ public class Commands {
 					}
 				}
 			}
+			return true;
+		} else if(c.equalsIgnoreCase("realestatescan")) {
+			boolean b = args.length > 0;
+			RealEstateScan scan = new RealEstateScan(p, true, b);
+			p.sendMessage(String.format("area: %s ext: %s rooms: %s quality: %s scannedFloorSize: %s", scan.interiorArea, scan.exteriorArea, scan.interiorRoomCount, scan.suggestedQualityClass, scan.scannedBlocks.keySet().size()));
+			return true;
+		} else if(c.equalsIgnoreCase("realestatescan_nonchunk")) {
+			boolean b = args.length > 0;
+			RealEstateScan scan = new RealEstateScan(p, false, b);
+			p.sendMessage(String.format("area: %s ext: %s rooms: %s quality: %s scannedFloorSize: %s", scan.interiorArea, scan.exteriorArea, scan.interiorRoomCount, scan.suggestedQualityClass, scan.scannedBlocks.keySet().size()));
 			return true;
 		}
 		return false;

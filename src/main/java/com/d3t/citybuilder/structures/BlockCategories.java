@@ -247,6 +247,8 @@ public class BlockCategories {
 	};
 	
 	public static final Material[] otherNonObstructingBlocks = new Material[] {
+		Material.TORCH,
+		Material.WALL_TORCH,
 		Material.LEVER,
 		Material.LANTERN,
 		Material.STONE_PRESSURE_PLATE,
