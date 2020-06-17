@@ -61,6 +61,11 @@ public class RealEstateScan {
 		public BlockPos clone() {
 			return new BlockPos(x,y,z);
 		}
+		
+		@Override
+		public String toString() {
+			return "("+x+","+y+","+z+")";
+		}
 	}
 	
 	public enum Direction {
@@ -155,7 +160,7 @@ public class RealEstateScan {
 		
 		public void logToPlayer(Player p) {
 			String msg = "§3<ImmoScanner>";
-			if(level == LogLevel.INFO) msg += " [INFO] ";
+			if(level == LogLevel.INFO) msg += " §f[INFO] ";
 			else if(level == LogLevel.WARNING) msg += " §e[WARN] ";
 			else if(level == LogLevel.ERROR) msg += " §c[ERROR] ";
 			msg += message;
@@ -163,15 +168,15 @@ public class RealEstateScan {
 		}
 	}
 	
-	public static final int maxFloorBlocks = 1000;
-	public static final int maxVolume = 3000;
+	public static final int maxFloorBlocks = 2000;
+	public static final int maxVolume = 10000;
 	public static final int maxExtentsFromOrigin = 32;
 	public static final float minAvgSkylightForBalcony = 12;
 	public static final float minAvgSkylightForInterior = 7.5F;
 	public static final float minAvgBlocklightForInterior = 9.5F;
 	public static final int minLightPerBlock = 6;
 	public static final int minRoomSize = 10;
-	public static final int maxRoomsize = 400;
+	public static final int maxRoomsizeNonMainRoom = 400;
 	public static final Material requiredKitchenBlock = Material.CRAFTING_TABLE;
 	public static final Material[] extraKitchenBlocks = new Material[] {Material.FURNACE,Material.SMOKER,Material.CAULDRON,Material.IRON_BLOCK,Material.BARREL,Material.CHEST};
 	public static final int minKitchenBlocks = 4;
@@ -182,6 +187,7 @@ public class RealEstateScan {
 	public static final Direction[] allPlanarDirections = new Direction[] {Direction.XPos, Direction.XNeg, Direction.ZPos, Direction.ZNeg};
 	public static final Direction[] allDirections = new Direction[] {Direction.XPos, Direction.XNeg, Direction.YPos, Direction.YNeg, Direction.ZPos, Direction.ZNeg};
 	
+	Player executor;
 	World world;
 	BlockPos origin;
 	int originX;
@@ -190,8 +196,10 @@ public class RealEstateScan {
 	boolean useChunkBoundaries;
 	int chunkX;
 	int chunkZ;
+	boolean airScanDebug;
 	
-	HashMap<BlockPos, Integer> scannedBlocks = new HashMap<BlockPos, Integer>();
+	public HashMap<BlockPos, Integer> scannedBlocks = new HashMap<BlockPos, Integer>();
+	public HashMap<BlockPos, Integer> scannedBlocksPhase2 = new HashMap<BlockPos, Integer>();
 	boolean[] roomAirtightness;
 
 	ArrayList<BlockPos> currentRoomScannedAir;
@@ -217,202 +225,234 @@ public class RealEstateScan {
 
 	private ArrayList<ScanLogMessage> logMessages = new ArrayList<ScanLogMessage>();
 	
-	public RealEstateScan(World w, int x, int y, int z, boolean chunkBound) throws Exception {
-		world = w;
-		originX = x;
-		originY = y;
-		originZ = z;
-		if(chunkBound) {
-			useChunkBoundaries = true;
-			int[] chunk = getChunk(new BlockPos(x,y,z));
-			chunkX = chunk[0];
-			chunkZ = chunk[1];
-		}
-		//Start a recurive scan across the whole apartment
-		status = ScanStatus.SCANNING_FLOOR;
-		scanFloorPosition(new BlockPos(x,y,z));
-		//Assign a room number for each separated room
-		int attempts = 32;
-		int roomNum = 0;
-		while(attempts > 0) {
-			attempts--;
+	public RealEstateScan(Player p, boolean chunkBound, boolean debug) {
+		try {
+			executor = p;
+			world = p.getWorld();
+			originX = p.getLocation().getBlockX();
+			originY = p.getLocation().getBlockY();
+			originZ = p.getLocation().getBlockZ();
+			airScanDebug = debug;
+			if(chunkBound) {
+				useChunkBoundaries = true;
+				int[] chunk = getChunk(new BlockPos(originX,originY,originZ));
+				chunkX = chunk[0];
+				chunkZ = chunk[1];
+			}
+			//Start a recurive scan across the whole apartment
+			status = ScanStatus.SCANNING_FLOOR;
+			scanFloorPosition(new BlockPos(originX,originY,originZ), scannedBlocks);
+			//Assign a room number for each separated room
+			int attempts = 32;
+			int roomNum = 0;
+			while(attempts > 0) {
+				attempts--;
+				if(scannedBlocks.containsValue(-1)) {
+					//Find the first non-assigned space, then do a recursive check for the whole room
+					BlockPos pos = null;
+					for(BlockPos bp : scannedBlocks.keySet()) {
+						if(scannedBlocks.get(bp) == -1) {
+							pos = bp;
+							break;
+						}
+					}
+					if(pos != null) {
+						scanRoom(pos, roomNum);
+						roomNum++;
+					} else {
+						throw new UnexpectedException("An unassigned space was located but could not be feteched!");
+					}
+				} else {
+					//All rooms have been assigned
+					executor.sendMessage("Debug: all spaces assigned!: tries left: "+attempts);
+					attempts = 0;
+				}
+			}
 			if(scannedBlocks.containsValue(-1)) {
-				//Find the first non-assigned space, then do a recursive check for the whole room
+				BlockPos[] arr = getAllScannedFloorBlocksInRoom(-1);
+				executor.sendMessage("there are '-1' spaces: "+arr.length);
+				for(BlockPos b : arr) {
+					//world.getBlockAt(b.x, b.y, b.z).setType(Material.RED_CARPET);
+					executor.sendMessage("@ "+b.toString());
+				}
+				throw new UnexpectedException("An unassigned space was located after the assignment!");
+			}
+			//Check airtightness in each room
+			roomAirtightness = new boolean[roomNum];
+			for(int i = 0; i < roomNum; i++) {
+				currentRoomScannedAir = new ArrayList<BlockPos>();
+				//Get the first position registered in room i
 				BlockPos pos = null;
 				for(BlockPos bp : scannedBlocks.keySet()) {
-					if(scannedBlocks.get(bp) == -1) {
-						pos = bp;
-						break;
-					}
+					if(scannedBlocks.get(bp) == i) pos = bp; 
 				}
 				if(pos != null) {
-					scanRoom(pos, roomNum);
-					roomNum++;
+					//currentRoomNotAirtight = false;
+					currentRoomNotAirtight = !scanAir(pos);
+					roomAirtightness[i] = !currentRoomNotAirtight;
 				} else {
-					throw new UnexpectedException("An unassigned space was located but could not be feteched!");
+					CBMain.log.warning("Failed to check air in room "+i+"! No floor space was found.");
 				}
-			} else {
-				//All rooms have been assigned
-				attempts = 0;
 			}
-		}
-		if(scannedBlocks.containsValue(-1)) {
-			throw new UnexpectedException("An unassigned space was located after the assignment!");
-		}
-		//Check airtightness in each room
-		roomAirtightness = new boolean[roomNum];
-		for(int i = 0; i < roomNum; i++) {
-			currentRoomScannedAir = new ArrayList<BlockPos>();
-			//Get the first position registered in room i
-			BlockPos pos = null;
-			for(BlockPos bp : scannedBlocks.keySet()) {
-				if(scannedBlocks.get(bp) == i) pos = bp; 
+			//Do an illumination scan (light sources and skylight) and count the room areas
+			averageSkylightPerRoom = new float[roomNum];
+			averageBlocklightPerRoom = new float[roomNum];
+			tooDarkFloorSpacesPerRoom = new int[roomNum];
+			roomAreas = new int[roomNum];
+			for(int i = 0; i < roomNum; i++) {
+				float bl = 0;
+				float sl = 0;
+				BlockPos[] floor = getAllScannedFloorBlocksInRoom(i);
+				for(BlockPos pos : floor) {
+					Block b = world.getBlockAt(pos.x, pos.y, pos.z);
+					bl += b.getLightFromBlocks();
+					sl += b.getLightFromSky();
+					if(sl+bl <= minLightPerBlock) {
+						tooDarkFloorSpacesPerRoom[i]++;
+					}
+					roomAreas[i]++;
+				}
+				averageSkylightPerRoom[i] = sl/floor.length;
+				averageBlocklightPerRoom[i] = bl/floor.length;
 			}
-			if(pos != null) {
-				currentRoomNotAirtight = false;
-				scanAir(pos);
-				roomAirtightness[i] = !currentRoomNotAirtight;
-				String msg = "Room # "+i+": "+currentRoomScannedAir.size()+" air volume, "+(currentRoomNotAirtight?"NOT":"")+" airtight";
+			//count actual rooms
+			roomStatus = new RoomStatus[roomNum];
+			for(int i = 0; i < roomStatus.length; i++) {
+				roomStatus[i] = getRoomStatus(i);
+				String msg = "Room # "+i+": "+roomAreas[i]+" m2, "+roomStatus[i].name();
 				logMessage(LogLevel.INFO, msg);
-				CBMain.log.info(msg);
-			} else {
-				CBMain.log.warning("Failed to check air in room "+i+"! No floor space was found.");
 			}
-		}
-		//Do an illumination scan (light sources and skylight) and count the room areas
-		averageSkylightPerRoom = new float[roomNum];
-		averageBlocklightPerRoom = new float[roomNum];
-		tooDarkFloorSpacesPerRoom = new int[roomNum];
-		roomAreas = new int[roomNum];
-		for(int i = 0; i < roomNum; i++) {
-			float bl = 0;
-			float sl = 0;
-			BlockPos[] floor = getAllScannedFloorBlocksInRoom(i);
-			for(BlockPos pos : floor) {
-				Block b = world.getBlockAt(pos.x, pos.y, pos.z);
-				bl += b.getLightFromBlocks();
-				sl += b.getLightFromSky();
-				if(sl+bl <= minLightPerBlock) {
-					tooDarkFloorSpacesPerRoom[i]++;
-				}
-				roomAreas[i]++;
-			}
-			averageSkylightPerRoom[i] = sl/floor.length;
-			averageBlocklightPerRoom[i] = bl/floor.length;
-		}
-		//count actual rooms
-		roomStatus = new RoomStatus[roomNum];
-		for(int i = 0; i < roomStatus.length; i++) {
-			roomStatus[i] = getRoomStatus(i);
-		}
-		//check for bathrooms and kitchen
-		for(int i = 0; i < roomNum; i++) {
-			if(roomStatus[i].isInterior()) {
-				if(!hasKitchen) {
-					if(containsBlocks(i, requiredKitchenBlock, extraKitchenBlocks, minKitchenBlocks)) {
-						hasKitchen = true;
-						if(i != 0) {
-							//If the room is small enough, consider it a dedicated kitchen (not part of any actual room)
-							if(roomStatus[i] == RoomStatus.VALID) {
-								if(roomAreas[i] < 20) {
-									roomStatus[i] = RoomStatus.EXTRA_ROOM;
-									logMessage(LogLevel.INFO, "Kitchen was not accounted as an actual room.");
+			//check for bathrooms and kitchen
+			for(int i = 0; i < roomNum; i++) {
+				if(roomStatus[i].isInterior()) {
+					if(!hasKitchen) {
+						if(containsBlocks(i, requiredKitchenBlock, extraKitchenBlocks, minKitchenBlocks)) {
+							hasKitchen = true;
+							if(i != 0) {
+								//If the room is small enough, consider it a dedicated kitchen (not part of any actual room)
+								if(roomStatus[i] == RoomStatus.VALID) {
+									if(roomAreas[i] < 20) {
+										roomStatus[i] = RoomStatus.EXTRA_ROOM;
+										logMessage(LogLevel.INFO, "Kitchen was not accounted as an actual room.");
+									}
 								}
 							}
 						}
 					}
-				}
-				if(!hasBathroom) {
-					if(containsBlocks(i, requiredBathroomBlock, extraBathroomBlocks, minBathroomBlocks)) {
-						hasBathroom = true;
-						if(i == 0) {
-							//The bathroom is interconnected with the main room, this should not happen
-							logMessage(LogLevel.ERROR, "Bathroom was located in main room. Bathroom was ignored.");
-						} else {
-							//If the room is small enough, consider it a dedicated bathroom (not part of any actual room)
-							if(roomStatus[i] == RoomStatus.VALID) {
-								if(roomAreas[i] < 20) {
-									roomStatus[i] = RoomStatus.EXTRA_ROOM;
-								} else {
-									logMessage(LogLevel.INFO, "Bathroom was accounted as part of another room.");
+					if(!hasBathroom) {
+						if(containsBlocks(i, requiredBathroomBlock, extraBathroomBlocks, minBathroomBlocks)) {
+							hasBathroom = true;
+							if(i == 0) {
+								//The bathroom is interconnected with the main room, this should not happen
+								logMessage(LogLevel.ERROR, "Bathroom was located in main room. Bathroom was ignored.");
+							} else {
+								//If the room is small enough, consider it a dedicated bathroom (not part of any actual room)
+								if(roomStatus[i] == RoomStatus.VALID) {
+									if(roomAreas[i] < 20) {
+										roomStatus[i] = RoomStatus.EXTRA_ROOM;
+									} else {
+										logMessage(LogLevel.INFO, "Bathroom was accounted as part of another room.");
+									}
 								}
 							}
 						}
 					}
 				}
 			}
-		}
-		//Calculate the apartment's specs
-		for(int i = 0; i < roomNum; i++) {
-			RoomStatus rs = roomStatus[i];
-			if(rs == RoomStatus.VALID) interiorRoomCount++;
-			if(rs.isInterior()) interiorArea += roomAreas[i];
-			if(rs == RoomStatus.EXTERIOR) {
-				balconyAndTerraceCount++;
-				exteriorArea += roomAreas[i];
+			//Calculate the apartment's specs
+			for(int i = 0; i < roomNum; i++) {
+				RoomStatus rs = roomStatus[i];
+				if(rs == RoomStatus.VALID) interiorRoomCount++;
+				if(rs.isInterior()) interiorArea += roomAreas[i];
+				if(rs == RoomStatus.EXTERIOR) {
+					balconyAndTerraceCount++;
+					exteriorArea += roomAreas[i];
+				}
+			}
+			logMessage(LogLevel.INFO, "Done!");
+			//determine the apartment's quality class
+			int maxClass = 4;
+			qualityRating = interiorArea;
+			qualityRating *= 1F+Math.max((interiorRoomCount-1f)/5f, 0);
+			if(exteriorArea > 8) {
+				float ext = Math.min(exteriorArea*1.4F, 60);
+				ext *= 1+Math.max((balconyAndTerraceCount-1f)/3f, 0);
+				qualityRating += ext;
+			}
+			if(!hasBathroom) {
+				qualityRating *= 0.75F;
+				maxClass = 3;
+			}
+			if(!hasKitchen) {
+				qualityRating *= 0.6F;
+				maxClass = 2;
+			}
+			suggestedQualityClass = Math.min(qualityRating/120F, maxClass);
+			for(ScanLogMessage slm : logMessages) {
+				slm.logToPlayer(executor);
 			}
 		}
-		//determine the apartment's quality class
-		int maxClass = 4;
-		qualityRating = interiorArea;
-		qualityRating *= 1F+Math.max((interiorRoomCount-1f)/5f, 0);
-		if(exteriorArea > 8) {
-			float ext = Math.min(exteriorArea*1.4F, 60);
-			ext *= 1+Math.max((balconyAndTerraceCount-1f)/3f, 0);
-			qualityRating += ext;
+		catch(Exception e) {
+			if(executor != null) {
+				executor.sendMessage("ERROR!");
+				executor.sendMessage(e.toString());
+				for(ScanLogMessage slm : logMessages) {
+					slm.logToPlayer(executor);
+				}
+			}
+			e.printStackTrace();
 		}
-		if(!hasBathroom) {
-			qualityRating *= 0.75F;
-			maxClass = 3;
-		}
-		if(!hasKitchen) {
-			qualityRating *= 0.6F;
-			maxClass = 2;
-		}
-		suggestedQualityClass = Math.min(qualityRating/120F, maxClass);
 	}
 	
-	private void scanFloorPosition(BlockPos pos) {
+	private void scanFloorPosition(BlockPos pos, HashMap<BlockPos, Integer> scanMap) {
 		if(status.isError()) return;
 		if(canStand(pos)) {
-			if(scannedBlocks.size() < maxFloorBlocks) {
-				scannedBlocks.put(pos, -1);
+			if(scanMap.size() < maxFloorBlocks) {
+				scanMap.put(pos, -1);
+				//world.getBlockAt(pos.x, pos.y, pos.z).setType(Material.CYAN_CARPET);
 				//roomSize[roomNum]++;
-				NeighborData[] neighbors = findFloorNeighbors(pos);
+				NeighborData[] neighbors = findFloorNeighbors(pos, scanMap);
 				for(NeighborData n : neighbors) {
 					if(isWithinBoundaries(n.pos)) {
-						scanFloorPosition(n.pos);
+						scanFloorPosition(n.pos, scanMap);
 					} else {
+						logMessage(LogLevel.ERROR, "Out of bounds!");
 						status = ScanStatus.ERROR_OUT_OF_BOUNDS;
 					}
 				}
 			} else {
 				//Maximum reached, abort
+				logMessage(LogLevel.ERROR, "Too large!");
 				status = ScanStatus.ERROR_TOO_LARGE;
 			}
 		} else {
 			//The area is not valid, this should not happen
+			logMessage(LogLevel.ERROR, "Can't stand here, this should not happen!");
 		}
 	}
 	
-	private NeighborData[] findFloorNeighbors(BlockPos from) {
+	private NeighborData[] findFloorNeighbors(BlockPos from, HashMap<BlockPos, Integer> scanMap) {
 		ArrayList<NeighborData> list = new ArrayList<NeighborData>();
 		for(Direction d : allPlanarDirections) {
 			NeighborCheckResult result = checkNeighbor(from, d);
 			if(result != NeighborCheckResult.Invalid) {
 				BlockPos pos = d.apply(from);
 				//A valid neighbor was found, continue the recursion
-				if(result == NeighborCheckResult.Ascending) pos = pos.getAbove();
-				else if(result == NeighborCheckResult.Descending) pos = pos.getBelow();
+				if(result == NeighborCheckResult.Ascending) {
+					pos = pos.getAbove();
+				}
+				else if(result == NeighborCheckResult.Descending) {
+					pos = pos.getBelow();
+				}
 				if(result == NeighborCheckResult.Door) {
-					if(crossDoor(pos, d)) {
+					if(crossDoor(pos, d, scanMap)) {
 						//The door was successfully crossed, move through the door
 						pos = d.apply(pos);
-						if(!isChecked(pos)) list.add(new NeighborData(result,d,pos));
+						if(!isChecked(pos, scanMap)) list.add(new NeighborData(result,d,pos));
 					}
 				} else {
 					//It is a regular neighbor spot
-					if(!isChecked(pos)) list.add(new NeighborData(result,d,pos));
+					if(!isChecked(pos, scanMap)) list.add(new NeighborData(result,d,pos));
 				}
 			}
 		}
@@ -426,7 +466,7 @@ public class RealEstateScan {
 			//The neighbor contains a door
 			return NeighborCheckResult.Door;
 		}
-		if(isWall(pos)) return NeighborCheckResult.Invalid;
+		//if(isWall(pos)) return NeighborCheckResult.Invalid;
 		//TODO: only account correctly facing stairs and slabs for acending/descending
 		if(canStand(pos)) {
 			//The position is valid without any elevation changes
@@ -445,7 +485,7 @@ public class RealEstateScan {
 	
 	private void scanRoom(BlockPos pos, int room) {
 		scannedBlocks.put(pos, room);
-		NeighborData[] neighbors = findFloorNeighbors(pos);
+		NeighborData[] neighbors = findFloorNeighbors(pos, scannedBlocksPhase2);
 		for(NeighborData n : neighbors) {
 			if(n.result != NeighborCheckResult.Door && n.result != NeighborCheckResult.Invalid) {
 				if(scannedBlocks.get(n.pos) == -1) scanRoom(n.pos, room);
@@ -455,11 +495,14 @@ public class RealEstateScan {
 	
 	private boolean scanAir(BlockPos pos) {
 		//If there are more than 16 blocks of air above or below, consider this room to be not airtight
+		currentRoomScannedAir.add(pos);
+		if(airScanDebug) world.getBlockAt(pos.x, pos.y, pos.z).setType(Material.COBWEB);
 		int limit = 16;
 		if(getAllAirspacesInDirection(pos, Direction.YPos, limit).length >= limit || getAllAirspacesInDirection(pos, Direction.YNeg, limit).length >= limit) {
 			return false;
 		}
-		for(BlockPos n : findSpaceNeighbors(pos, true, false)) {
+		BlockPos[] neighbors = findSpaceNeighbors(pos, true, false);
+		for(BlockPos n : neighbors) {
 			if(!scanAir(n)) return false;
 		}
 		return true;
@@ -496,7 +539,7 @@ public class RealEstateScan {
 		if(roomAreas[i] < minRoomSize) {
 			return RoomStatus.TOO_SMALL;
 		}
-		if(roomAreas[i] > maxRoomsize) {
+		if(i > 0 && roomAreas[i] > maxRoomsizeNonMainRoom) {
 			return RoomStatus.TOO_LARGE;
 		}
 		if(averageSkylightPerRoom[i] < minAvgSkylightForInterior) {
@@ -557,7 +600,9 @@ public class RealEstateScan {
 	
 	//Checks if a player can "jump" in that spot. This is used to determine wether a player can climb onto a higher elevation from that position
 	private boolean canStandAndJump(BlockPos pos) {
-		return canStand(pos) && canStand(pos.getAbove());
+		BlockPos jumpSpace = pos.clone();
+		jumpSpace.y += 2;
+		return canStand(pos) && isAir(jumpSpace);
 	}
 	
 	//Checks if the specified location contains an unpassable wall
@@ -565,20 +610,20 @@ public class RealEstateScan {
 		return !isValidGroundBlock(pos) && !isValidGroundBlock(pos.getAbove());
 	}
 	
-	private boolean isChecked(BlockPos pos) {
-		return scannedBlocks.containsKey(pos);
+	private boolean isChecked(BlockPos pos, HashMap<BlockPos, Integer> map) {
+		return map.containsKey(pos);
 	}
 	
-	private boolean crossDoor(BlockPos pos, Direction crossDir) {
+	private boolean crossDoor(BlockPos pos, Direction crossDir, HashMap<BlockPos, Integer> map) {
 		//A door will only be crossed if it faces the right direction
 		Door d = (Door)world.getBlockAt(pos.x, pos.y, pos.z).getBlockData();
 		BlockFace facing = d.getFacing();
-		if((facing == BlockFace.NORTH && crossDir == Direction.ZPos) ||
-			(facing == BlockFace.EAST && crossDir == Direction.XNeg) ||
-			(facing == BlockFace.SOUTH && crossDir == Direction.ZNeg) ||
-			(facing == BlockFace.WEST && crossDir == Direction.XPos)) {
+		if((facing == BlockFace.SOUTH && crossDir == Direction.ZPos) ||
+			(facing == BlockFace.WEST && crossDir == Direction.XNeg) ||
+			(facing == BlockFace.NORTH && crossDir == Direction.ZNeg) ||
+			(facing == BlockFace.EAST && crossDir == Direction.XPos)) {
 			pos = crossDir.apply(pos);
-			return canStand(pos) && !isChecked(pos);
+			return canStand(pos) && !isChecked(pos, map);
 		} else {
 			//The door is not facing the correct direction
 			return false;

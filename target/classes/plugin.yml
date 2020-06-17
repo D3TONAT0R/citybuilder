@@ -56,3 +56,13 @@ commands:
       usage: /<zoneinfo>
       permission: citybuilder.city.info
       permission-message: You don't have permission to use this command
+   realestatescan:
+      description: Shows debug information for zones
+      usage: /<realestatescan>
+      permission: citybuilder.city.info
+      permission-message: You don't have permission to use this command
+   realestatescan_nonchunk:
+      description: Shows debug information for zones
+      usage: /<realestatescan_nonchunk>
+      permission: citybuilder.city.info
+      permission-message: You don't have permission to use this command

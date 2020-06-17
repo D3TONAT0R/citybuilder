@@ -1,0 +1,77 @@
+lastAccountName: zanchin1995
+timestamps:
+  login: 1585814219169
+  lastteleport: 1585819753197
+  logout: 1585754557316
+ipAddress: 188.155.206.223
+lastlocation:
+  world: Kings_Landing
+  x: 6857.430882300068
+  y: 82.0
+  z: 13831.520093526782
+  yaw: 231.0476
+  pitch: 90.0
+money: '154127.710999999999517'
+logoutlocation:
+  world: Testzone
+  x: -87.2540240874241
+  y: 4.0
+  z: -53.42857678368647
+  yaw: -225.26399
+  pitch: -37.701286
+afk: false
+homes:
+  _2_:
+    world: Survival
+    x: 4179.313555986487
+    y: 218.0
+    z: 518.6357030217983
+    yaw: 85.04544
+    pitch: 90.0
+  _1_:
+    world: Survival
+    x: 737.5
+    y: 80.0
+    z: 84.5
+    yaw: -3.6045558
+    pitch: 90.0
+  _3_:
+    world: Survival
+    x: 749.3370657624495
+    y: 5.0
+    z: 68.28599521083233
+    yaw: -7.654602
+    pitch: 89.25
+  home:
+    world: Survival
+    x: 2858.388526948593
+    y: 71.0
+    z: 17384.5370559449
+    yaw: -91.941284
+    pitch: 90.0
+  x:
+    world: Survival
+    x: 2847.687496847332
+    y: 71.0
+    z: 17366.87723782936
+    yaw: -264.78186
+    pitch: 90.0
+  y:
+    world: Survival
+    x: 2861.1231492931943
+    y: 50.0
+    z: 17435.470356971186
+    yaw: -153.36406
+    pitch: 90.0
+  a:
+    world: glarus_winter
+    x: 1015.0405761576111
+    y: 133.0
+    z: 650.2874466515246
+    yaw: 103.0567
+    pitch: 27.760513
+nickname: Franz_Grillpanzer
+godmode: false
+mail:
+- §6[§rD3TONAT0R§6] §rDann nenne mir deinen Preis für den schäbigen Abbruchsolitär
+  der Ghettokultur?

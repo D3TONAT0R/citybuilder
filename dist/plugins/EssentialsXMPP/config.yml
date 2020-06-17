@@ -1,0 +1,18 @@
+xmpp:
+  server: 'jabber.de'
+  user: 'kingslandingmc'
+  password: 'PortRoyal'
+  port: 5222
+  sasl-enabled: true
+
+op-users:
+ - 'kingslandingmcuser@jabber.de'
+ - 'kingslandingmc@jabber.de'
+
+debug: false
+log-enabled: true
+# Level is minimum level that should be send: info, warning, severe
+log-level: info
+log-users:
+ - 'kingslandingmcuser@jabber.de'
+ - 'kingslandingmc@jabber.de'

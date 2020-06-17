@@ -1,0 +1,86 @@
+logoutlocation:
+  world: Testzone
+  x: -38.514132910440914
+  y: 4.0
+  z: -40.55186075085038
+  yaw: -126.8374
+  pitch: 11.272475
+timestamps:
+  logout: 1585769456304
+  login: 1591725155205
+  lastteleport: 1585685301860
+  kits:
+    test2: 1571328104275
+    color: 1563145894108
+    test: 1571328092900
+    worldedit: 1571328709293
+    notch: 1571328129367
+    dtools: 1563141308010
+    tools: 1567255335491
+lastAccountName: D3TONAT0R
+ipAddress: 127.0.0.1
+lastlocation:
+  world: Kings_Landing
+  x: 5429.796214548434
+  y: 70.0
+  z: 15009.121200535348
+  yaw: -157.94934
+  pitch: -0.43514743
+afk: false
+money: '70431.699999999999640'
+confirm-pay: true
+godmode: false
+socialspy: false
+homes:
+  home:
+    world: Survival
+    x: 343.71772514941915
+    y: 76.0
+    z: -388.69999998807907
+    yaw: -268.56918
+    pitch: 32.6107
+  shelter:
+    world: Survival
+    x: 340.16645633835594
+    y: 60.0
+    z: -373.4707195187038
+    yaw: 273.18518
+    pitch: 4.8308845
+  bkt:
+    world: Kings_Landing
+    x: 5769.866916450891
+    y: 72.0
+    z: 14794.300879465918
+    yaw: -145.41547
+    pitch: 19.677017
+  a:
+    world: Kings_Landing
+    x: 5781.075620947137
+    y: 69.0
+    z: 14781.048716423817
+    yaw: -141.06598
+    pitch: 3.4533875
+  glarusjail:
+    world: glarus_winter
+    x: 203.3035006150724
+    y: 1.0
+    z: 199.06364833480248
+    yaw: -306.34082
+    pitch: 5.8337398
+  pvpcomm:
+    world: Kings_Landing
+    x: 5783.949999988079
+    y: 69.125
+    z: 14783.699999988079
+    yaw: -219.40207
+    pitch: -0.41349235
+  dem:
+    world: Kings_Landing_demolition
+    x: 7018.2557033491175
+    y: 100.0
+    z: 13848.876024076942
+    yaw: -8.470856
+    pitch: 13.454989
+teleportauto: false
+teleportenabled: true
+nickname: D3TONAT0R
