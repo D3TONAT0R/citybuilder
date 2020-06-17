@@ -63,7 +63,7 @@ public class StructureFactory {
 		StructureFactory sf = new StructureFactory(p.getWorld(), pos, name, category, requireInfoline, p);
 
 		// Done
-		StructureLibrary.registerStructure(sf.structure, category);
+		StructureLibrary.registerStructure(sf.structure, category, sf.structure.targetZone, sf.structure.targetDensity);
 		if (StructureSaveUtil.saveStructure(sf.structure)) {
 			p.sendMessage("Structure saved as: " + name);
 		} else {

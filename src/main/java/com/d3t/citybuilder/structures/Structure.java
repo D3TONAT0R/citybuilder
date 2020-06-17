@@ -7,6 +7,8 @@ import org.bukkit.block.data.MultipleFacing;
 
 import com.d3t.citybuilder.zones.RealEstateData;
 import com.d3t.citybuilder.zones.Zone;
+import com.d3t.citybuilder.zones.ZoneDensity;
+import com.d3t.citybuilder.zones.ZoneType;
 
 public class Structure {
 
@@ -23,6 +25,8 @@ public class Structure {
 	public int legalHeight = 0;
 	public RealEstateData[] realEstateData;
 	
+	public ZoneType targetZone = ZoneType.UNZONED;
+	public ZoneDensity targetDensity = ZoneDensity.Low;
 
 	public Structure() {
 

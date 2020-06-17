@@ -2,7 +2,6 @@ package com.d3t.citybuilder.io;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.block.Banner;
@@ -16,10 +15,7 @@ import com.d3t.citybuilder.framework.CBMain;
 import com.d3t.citybuilder.structures.Structure;
 import com.d3t.citybuilder.structures.StructureFrontline;
 import com.d3t.citybuilder.structures.StructureLibrary;
-import com.d3t.citybuilder.structures.TrafficStructurePieces;
 import com.d3t.citybuilder.zones.RealEstateData;
-
-import net.minecraft.server.v1_15_R1.BlockSign;
 
 public class StructureSaveUtil {
 
@@ -118,9 +114,7 @@ public class StructureSaveUtil {
 	public static void loadSavedStructures() {
 		successfullyLoadedFiles = 0;
 		failedToLoadFiles = 0;
-		StructureLibrary.allStructures = new HashMap<String, Structure>();
-		StructureLibrary.categories = new HashMap<String, HashMap<String, Structure>>();
-		StructureLibrary.trafficStructures = new HashMap<String, TrafficStructurePieces>();
+		StructureLibrary.initialize();
 		File dir = new File(CBMain.getDataFolderPath().getAbsolutePath() + "/structures/");
 		System.out.println("loading structures ...");
 		if (dir.isDirectory()) {
@@ -128,7 +122,7 @@ public class StructureSaveUtil {
 				System.out.println("Loading structure file " + f.getName());
 				Structure s = loadStructure(f);
 				if (s != null) {
-					StructureLibrary.registerStructure(s, s.category);
+					StructureLibrary.registerStructure(s, s.category, s.targetZone, s.targetDensity);
 					successfullyLoadedFiles++;
 				} else {
 					System.out.println("Failed to load structure file " + f.getName());
@@ -204,7 +198,6 @@ public class StructureSaveUtil {
 
 	private static String[][][] readTileStateData(String[] input, int sizeX, int sizeY, int sizeZ) {
 		String[][][] states = new String[sizeX][sizeY][sizeZ];
-		boolean done = false;
 		for (String str : input) {
 			String[] split = str.split(" ");
 			int x = Integer.parseInt(split[0]);

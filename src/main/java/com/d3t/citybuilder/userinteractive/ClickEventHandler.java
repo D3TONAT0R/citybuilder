@@ -6,11 +6,15 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.server.MapInitializeEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.map.MapRenderer;
+import org.bukkit.map.MapView;
 
 import com.d3t.citybuilder.cities.City;
 import com.d3t.citybuilder.framework.CBMain;
 import com.d3t.citybuilder.framework.ChunkPosition;
+import com.d3t.citybuilder.userinteractive.maprenderers.TestMapRenderer;
 import com.d3t.citybuilder.zones.ZoneDensity;
 import com.d3t.citybuilder.zones.ZoneType;
 
@@ -105,6 +109,17 @@ public class ClickEventHandler implements Listener {
 		if(c != null) {
 			ChunkPosition pos = new ChunkPosition(p.getLocation());
 			c.setZone(p, pos.x, pos.z, t, d);
+		}
+	}
+	
+	@EventHandler(priority = EventPriority.HIGH)
+	public void onMapInitialize(MapInitializeEvent event) {
+		if(event.getMap().getId() == 8000) {
+			MapView view = event.getMap();
+			for(MapRenderer renderer : view.getRenderers()) {
+				view.removeRenderer(renderer);
+			}
+			view.addRenderer(new TestMapRenderer());
 		}
 	}
 }

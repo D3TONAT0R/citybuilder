@@ -469,7 +469,7 @@ public class RealEstateScan {
 	private BlockPos[] findSpaceNeighbors(BlockPos pos, boolean mustBeAir, boolean horizontalOnly) {
 		ArrayList<BlockPos> list = new ArrayList<BlockPos>();
 		Direction[] dirSet = horizontalOnly ? allPlanarDirections : allDirections;
-		for(Direction d : allDirections) {
+		for(Direction d : dirSet) {
 			BlockPos n = d.apply(pos);
 			if((isAir(n) && mustBeAir) && !currentRoomScannedAir.contains(n)) list.add(n);
 		}
@@ -632,7 +632,6 @@ public class RealEstateScan {
 	}
 	
 	private BlockPos getFirstScannedFloorBlockInRoom(int roomNum) {
-		ArrayList<BlockPos> list = new ArrayList<BlockPos>();
 		for(BlockPos bp : scannedBlocks.keySet()) {
 			if(scannedBlocks.get(bp) == roomNum) return bp;
 		}
@@ -651,5 +650,9 @@ public class RealEstateScan {
 	
 	private void logMessage(LogLevel l, String msg) {
 		logMessages.add(new ScanLogMessage(l, msg));
+	}
+	
+	public void logAllMessages(Player p) {
+		for(ScanLogMessage slm : logMessages) slm.logToPlayer(p);
 	}
 }

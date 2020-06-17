@@ -55,4 +55,18 @@ public enum RealEstateType {
 		else if(this == CUSTOM_W_HIGH) return 2;
 		else return -1;
 	}
+	
+	public String getDynmapIconName() {
+		if(this == RESIDENTAL_W1) return "immo_w1";
+		else if(this == RESIDENTAL_W2) return "immo_w2";
+		else if(this == RESIDENTAL_W3) return "immo_w3";
+		else if(this == RESIDENTAL_W4) return "immo_w4";
+		else if(this == RESIDENTAL_W5) return "immo_w5";
+		else if(this == RETAIL) return "immo_gs";
+		else if(this == OFFICE) return "immo_go";
+		else if(this == INDUSTRY_AGRICULTURE) return "immo_i";
+		else if(this == INDUSTRY_FACTORY) return "immo_i";
+		else if(this == INDUSTRY_HIGHTECH) return "immo_i";
+		else return "immo_generic";
+	}
 }
