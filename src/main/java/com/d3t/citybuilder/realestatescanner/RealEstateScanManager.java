@@ -5,9 +5,9 @@ import org.bukkit.entity.Player;
 
 public class RealEstateScanManager {
 
-	public void startScan(World w, int x, int y, int z, Player executor) {
+	public void startScan(World w, int x, int y, int z, Player executor, boolean chunkBound) {
 		try {
-			RealEstateScan scan = new RealEstateScan(w, x, y, z, false);
+			RealEstateScan scan = new RealEstateScan(executor, chunkBound, false);
 			scan.logAllMessages(executor);
 		}
 		catch(Exception e) {
@@ -15,5 +15,4 @@ public class RealEstateScanManager {
 			e.printStackTrace();
 		}
 	}
-	
 }

@@ -18,6 +18,8 @@ public class TestMapRenderer extends MapRenderer {
 		
 		BufferedImage image = new BufferedImage(128, 128, BufferedImage.TYPE_INT_RGB);
 		Graphics g = image.getGraphics();
+		g.setColor(new Color(255,0,255));
+		g.drawRect(0,0,128,128);
 		for(int x = 0; x < 128; x++) {
 			for(int y = 0; y < 128; y++) {
 				Color c = new Color(2*x, 2*y, 0);
