@@ -34,7 +34,7 @@ public class RealEstateData {
 		else if(type == RealEstateType.OFFICE) residentsOrWorkplaces = (int)Math.ceil(space/12d); //One workplace for every 12 m2
 		else if(type.isIndustrial()) {
 			if(type == RealEstateType.INDUSTRY_AGRICULTURE) residentsOrWorkplaces = 3+r.nextInt(4); //Random between 3 and 6
-			else residentsOrWorkplaces = (int)Math.ceil(space/25d); //One workplace for every 20 m2
+			else residentsOrWorkplaces = (int)Math.ceil(space/20d); //One workplace for every 20 m2
 		} else {
 			//It's a custom type. The workplaces need to be set manually
 			residentsOrWorkplaces = 0;
